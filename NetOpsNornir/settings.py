@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-=zqcr)9#msitm!i%)l3kt$zlnkonm=i-1k(mtrn#5a*ara+fpr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost"]
 
 # Application definition
 
@@ -131,11 +131,11 @@ DATABASES = {
 }
 DATABASE_ROUTERS = ['NetOpsNornir.database_router.DatabaseAppsRouter']  # 数据库路由
 DATABASE_APPS_MAPPING = {
-    'admin': 'smartoffice',
-    'auth': 'smartoffice',
-    'contenttypes': 'smartoffice',
-    'sessions': 'smartoffice',
-    'django': 'smartoffice',
+    'admin': 'NetOpsBase',
+    'auth': 'NetOpsBase',
+    'contenttypes': 'NetOpsBase',
+    'sessions': 'NetOpsBase',
+    'django': 'NetOpsBase',
     'app': 'default',
 }
 # Password validation
