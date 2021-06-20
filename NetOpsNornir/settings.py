@@ -74,15 +74,40 @@ WSGI_APPLICATION = 'NetOpsNornir.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'NAME': 'NetOpsNornir',
+        'USER': 'root',
+        'PASSWORD': '123456'
+    }, 'smartoffice': {
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'NAME': 'NetOpsBase',
+        'USER': 'root',
+        'PASSWORD': '123456'
+    }
+}
+DATABASE_ROUTERS = ['NetOpsNornir.database_router.DatabaseAppsRouter']  # 数据库路由
+DATABASE_APPS_MAPPING = {
+    'admin': 'smartoffice',
+    'auth': 'smartoffice',
+    'contenttypes': 'smartoffice',
+    'sessions': 'smartoffice',
+    'django': 'smartoffice',
+    'app': 'default',
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -105,15 +130,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
+LANGUAGE_CODE = 'zh-hans'  # 设置为中文
+TIME_ZONE = 'Asia/Shanghai'  # 设置时区
+USE_I18N = True  # 默认为True，是否启用自动翻译系统
+USE_L10N = True  # 默认False，以本地化格式显示数字和时间
+USE_TZ = False  # 默认值True。若使用了本地时间，必须设为False
 
 
 # Static files (CSS, JavaScript, Images)
