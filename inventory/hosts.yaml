@@ -1,0 +1,16 @@
+---
+dev01:
+  hostname: sbx-nxos-mgmt.cisco.com
+  platform: cisco_nxos
+  groups:
+    - bj
+    - nxos
+  data:
+    backup_configs:
+      # - show running-config
+      - show version
+      - show interface brief
+    cmd:
+      - interface eth1/2
+      - desc configed by nornir
+    config_file: dev01.config

@@ -1,0 +1,206 @@
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/wangcongxing/NetOpsNornir.git
+git push -u origin main
+
+
+数据库迁移
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+
+测试环境
+PUBTYPE=app ENV=test python3 manage.py makemigrations --settings=NetOpsNornir.test_settings
+PUBTYPE=app ENV=test python3 manage.py migrate --settings=NetOpsNornir.test_settings
+
+生产环境
+ENV=pro python3 manage.py makemigrations --settings=NetOpsNornir.pro_settings
+ENV=pro python3 manage.py migrate --settings=NetOpsNornir.prd_settings
+ENV=pro python3 manage.py runserver 0.0.0.0:8000 --settings=NetOpsNornir.pro_settings
+ENV=pro python3 manage.py createsuperuser --settings=NetOpsNornir.pro_settings
+#下载所有静态资源文件到项目的static目录中python manage.py collectstatic
+
+新建app
+python manage.py startapp xxx
+
+安装requirement.txt
+pip3 install -r requirements.txt
+
+生成requirement.txt
+pip freeze > requirements.txt
+
+启动mysql
+docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql
+
+#导出数据 python manage.py dumpdata [appname] >appname_data.json #导入数据 #根据自己的models，创建如下类似json文件 python manage.py loaddata fixture.json
+
+
+docker cp 130a05b1e233a:/etc/nginx/nginx.conf /Users/congxingwang/pythoncode/NetOpsBase/docker-nginx/nginx.conf
+
+docker cp 130a05b1e233a:/var/log/nginx /Users/congxingwang/pythoncode/NetOpsBase/docker-nginx/log
+
+docker cp 130a05b1e233a:/etc/nginx/conf.d/default.conf /Users/congxingwang/pythoncode/NetOpsBase/docker-nginx/conf.d/default.conf
+
+docker run --name nginx -p 3000:80 -v /Users/congxingwang/pythoncode/NetOpsBase/docker-nginx/nginx.conf:/etc/nginx/nginx.conf -v /Users/congxingwang/pythoncode/NetOpsBase/docker-nginx/log:/var/log/nginx -v /Users/congxingwang/pythoncode/NetOpsBase/docker-nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf -d nginx
+
+
+export GITLAB_HOME=$HOME/docker/gitlab
+
+
+docker run --detach --name gitlab --restart always --publish 40001:22 --publish 40002:80 --publish 40003:443 --volume $GITLAB_HOME/config:/etc/gitlab:Z --volume $GITLAB_HOME/logs:/var/log/gitlab:Z --volume $GITLAB_HOME/data:/var/opt/gitlab:Z gitlab/gitlab-ce
+
+
+
+测试环境启动
+
+PUBTYPE=app ENV=test python3 manage.py runserver 0.0.0.0:5002 --settings=NetOpsNornir.test_settings
+
+
+docker run --name nginxuwsgi -p 9000:80 -v /Users/congxingwang/pythoncode/djangoProject:/bankapp/ /Users/congxingwang/Desktop/docker/nginx:/etc/nginx/ -d nginxuwsgi
+
+
+uwsgi --ini uwsgi.ini
+
+uwsgi --http :8007 --module djangoProject.wsgi
+停止运行uwsgi，通过包含主进程编号的文件设置停止项目
+   uwsgi --stop uwsgi.pid
+
+重启uwsgi
+   uwsgi --reload uwsgi.pid
+
+fuser -k 8002/tcp
+fuser -k 8005/tcp
+
+/Users/congxingwang/pythoncode/djangoProject    :/bankapp/
+docker cp de9e9e25dda5:/app/ /Users/congxingwang/Desktop/docker/app
+docker cp de9e9e25dda5:/etc/nginx/ /Users/congxingwang/Desktop/docker/nginx
+docker cp de9e9e25dda5:/usr/share/nginx/html /Users/congxingwang/Desktop/docker/html
+docker cp de9e9e25dda5:/var/log/nginx /Users/congxingwang/Desktop/docker/log
+
+
+uwsgi --http :9000 --module djangoProject.wsgi
+
+uwsgi --http :443 --module djangoProject.wsgi
+
+
+pkill -f uwsgi -9
+
+
+include  uwsgi_params;
+            uwsgi_pass  127.0.0.1:9090;              //必须和uwsgi中的设置一致
+            uwsgi_param UWSGI_SCRIPT demosite.wsgi;  //入口文件，即wsgi.py相对于项目根目录的位置，“.”相当于一层目录
+            uwsgi_param UWSGI_CHDIR /demosite;       //项目根目录
+            index  index.html index.htm;
+            client_max_body_size 35m;
+
+command + option + l
+
+
+
+
+#添加配置选择
+[uwsgi]
+#配置和nginx连接的socket连接
+socket=127.0.0.1:8002
+#配置项目路径，项目的所在目录
+chdir=/bankapp/djangoProject/
+#配置wsgi接口模块文件路径
+module=djangoProject.wsgi.py
+#配置启动的进程数
+processes=4
+#配置每个进程的线程数
+threads=2
+#配置启动管理主进程
+master=True
+#配置存放主进程的进程号文件
+pidfile=uwsgi.pid
+#配置dump日志记录
+daemonize=uwsgi.log`
+
+
+ab -n 100 -c 5 "http://127.0.0.1:9800/hello/"
+
+
+
+export GOPATH=/usr/local/go
+export GOBIN=$GOPATH/binexport
+PATH=$PATH:$GOBIN
+
+
+
+{
+	// Place your snippets for go here. Each snippet is defined under a snippet name and has a prefix, body and
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+}
+
+$export http_proxy=http://45.79.114.57:8001
+
+export http_proxy=http://127.0.0.1:8001
+export https_proxy=http://127.0.0.1:8001
+
+git config --global user.name "wangcongxing"
+
+git config --global user.email "2256807897@qq.com"
+
+git remote add origin https://github.com/wangcongxing/weboffice.git
+
+git remote add origin https://github.com/wangcongxing/layso.git
+git push -u origin main
+
+git merge origin/main
+
+git remote add origin https://github.com/wangcongxing/layso.git
+git branch -M main
+git push -u origin main
+
+
+/usr/local/python3/bin/supervisord -c /etc/supervisord.conf
+
+scp -P 22 /Users/congxingwang/pythoncode/weboffice root@106.54.5.14:/project
+
+ssh root@106.54.5.14 -p 22
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'45.79.114.57' IDENTIFIED BY 'P@sswszyfd0rd' WITH GRANT OPTION;
+flush privileges;
+
+
+
+激活虚拟环境
+virtualenv wovenv
+cd wovenv
+source bin/activate
+
+https://open.work.weixin.qq.com/3rdapp/install?suite_id=ww2204b8d0daa1fb88&pre_auth_code=SXadQXfFhUNk2s-GyMsDo0wbfidSXaJYjQQxxJsAdxVsv-y_kKCgS74lrNv_GLln&redirect_uri=https%3a%2f%2fwww.szyfd.xyz%2fapp%2fhome&state=STATE
+
+
+https://open.work.weixin.qq.com/3rdapp/install?suite_id=ww2204b8d0daa1fb88&pre_auth_code=SXadQXfFhUNk2s-GyMsDo71D8mhC8ZXOvdv4FbqKWAJuwiXLXyaA0Qlh-shunLsZ&redirect_uri=https://www.szyfd.xyz/app/home&state=STATE
+
+
+https://open.work.weixin.qq.com/3rdapp/install?suite_id=ww2204b8d0daa1fb88&pre_auth_code=SXadQXfFhUNk2s-GyMsDo70c10wyS2O7EaLGFKj7hj5BZbxtD3i5m-DXI9gL-cmc&redirect_uri=https%3a%2f%2fwww.szyfd.xyz%2fapp%2fhome&state=STATE
+
+
+https://open.weixin.qq.com/connect/oauth2/authorize?appid=ww2204b8d0daa1fb88&redirect_uri=https%3a%2f%2fwww.szyfd.xyz%2fapp%2fhome&response_type=code&scope=snsapi_base&state=abc#wechat_redirect
+
+
+
+https://open.work.weixin.qq.com/wwopen/sso/3rd_qrConnect?appid=ww6bf931161e512094&redirect_uri=https%3a%2f%2fwww.szyfd.xyz%2fapp%2fhome&state=
+
+
+centos 启动事项
+
+1. 虚拟环境
+2。启动redis
+3。启动项目

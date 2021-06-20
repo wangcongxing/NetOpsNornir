@@ -1,0 +1,19 @@
+---
+nxos:
+  data:
+    save_config_type: save
+    save_config_info:
+      cmd: copy  running-config startup-config
+      confirm: true
+      confirm_response: yes
+bj:
+  data:
+    city: beijing
+juniper:
+  data:
+    save_config_type: commit
+    commit_msg: XX
+    save_config_info:
+      cmd: copy  running-config startup-config
+      confirm: true
+      confirm_response: yes
