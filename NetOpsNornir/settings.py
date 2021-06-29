@@ -11,20 +11,26 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-import os,datetime
+import os, datetime
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+NTC_TEMPLATES_DIR = os.path.join(BASE_DIR, 'ntc_templates')
+
+if not os.path.isdir(NTC_TEMPLATES_DIR):
+    os.makedirs(NTC_TEMPLATES_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=zqcr)9#msitm!i%)l3kt$zlnkonm=i-1k(mtrn#5a*ara+fpr'
+SECRET_KEY = 'django-insecure-889(bq5hlpp0=(lm$0qinrac=8k(xu^c&y93l7)mpa@$3t2$6%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Application definition
 
@@ -120,7 +126,7 @@ DATABASES = {
         'NAME': 'NetOpsNornir',
         'USER': 'root',
         'PASSWORD': '123456'
-    }, 'smartoffice': {
+    }, 'NetOpsBase': {
         'ENGINE': 'django.db.backends.mysql',
         'HOST': '127.0.0.1',
         'PORT': '3306',
@@ -167,7 +173,7 @@ USE_TZ = False  # 默认值True。若使用了本地时间，必须设为False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-MEDIA_URL = '/Users/congxingwang/pythoncode/NetOpsBase/media/' # 生产环境为nas 盘位置
+MEDIA_URL = '/Users/congxingwang/pythoncode/NetOpsBase/media/'  # 生产环境为nas 盘位置
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
@@ -177,14 +183,17 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# 项目常用配置文件
+initConfig = {
+    "NTC_TEMPLATES_DIR": NTC_TEMPLATES_DIR
+}
 
 # REST_FRAMEWORK JWT 验证
 REST_FRAMEWORK = {
     # 设置所有接口都需要被验证
     'DEFAULT_PERMISSION_CLASSES': (
-        #'rest_framework.permissions.IsAuthenticated',  #建议是特定接口特定认证
-        #'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.IsAuthenticated',  #建议是特定接口特定认证
+        # 'rest_framework.permissions.AllowAny',
     ),
     # 分页配置
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',

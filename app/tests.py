@@ -15,7 +15,7 @@ LOCAL_PATH: C:\Python36\Lib\site-packages\gitlab
 import gitlab
 
 url = 'https://gitlab.com/'
-token = 'bzcJXohY-amoKdsM2bsb'
+token = 'iAe-iqiQBiXaVLU3LsnR'
 
 # 登录
 gl = gitlab.Gitlab(url, token)
@@ -25,20 +25,20 @@ gl = gitlab.Gitlab(url, token)
 projects = gl.projects.list()
 print(projects)
 # 获取所有的project
-#projects = gl.projects.list(all=True)
+# projects = gl.projects.list(all=True)
 # ---------------------------------------------------------------- #
 
 
 # ---------------------------------------------------------------- #
 # 获取所有project的name,id
-#for p in gl.projects.list(all=True, as_list=False):
+# for p in gl.projects.list(all=True, as_list=False):
 #    print(p.name, p.id)
 # ---------------------------------------------------------------- #
 
 
 # ---------------------------------------------------------------- #
 # 获取第一页project的name,id
-#for p in gl.projects.list(page=1):
+# for p in gl.projects.list(page=1):
 #    print(p.name, p.id)
 # ---------------------------------------------------------------- #
 
@@ -46,21 +46,60 @@ print(projects)
 # ---------------------------------------------------------------- #
 # 通过指定id 获取 project 对象
 project = gl.projects.get(27551653)
+
+
 # ---------------------------------------------------------------- #
 
 
 # ---------------------------------------------------------------- #
 # 查找项目
-#projects = gl.projects.list(search='keyword')
+# projects = gl.projects.list(search='keyword')
 # ---------------------------------------------------------------- #
 
 # ---------------------------------------------------------------- #
 # 创建一个项目
-#project = gl.projects.create({'name': 'project1'})
+# project = gl.projects.create({'name': 'project1'})
 
 
 # ---------------------------------------------------------------- #
 # 创建一个commit
+def judgeType(projects, file_path):
+    try:
+        projects.files.get(file_path=file_path, ref="main")
+        return True
+    except Exception as e:
+        return False
+
+
+import os
+
+
+def commitFile(filePath, gitlabPath):
+    gl = gitlab.Gitlab(url, token)
+    projects = gl.projects.get(27551653)
+    jsonList = []
+    jMap = {}
+    jMap["branch"] = "main"
+    jMap["commit_message"] = "xxxxx"
+    for file in os.listdir("/Users/congxingwang/pythoncode/NetOpsNornir/inventory"):
+        file_dir = os.path.join(filePath, file)
+        gitlab_dir = '%s%s' % (gitlabPath, file)
+        aMap = {}
+        if judgeType(projects, gitlab_dir):
+            aMap["action"] = "update"
+        else:
+            aMap["action"] = "create"
+        aMap["file_path"] = gitlab_dir
+        aMap["content"] = 'blah'#open(file_dir, 'r', encoding='ISO-8859-1').read()
+        jsonList.append(aMap)
+    jMap["actions"] = jsonList
+    projects.commits.create(jMap)
+
+
+filePath = "/Users/congxingwang/pythoncode/NetOpsNornir/inventory"
+gitlabPath = "/NetOpsNornir/inventory"
+commitFile(filePath,gitlabPath)
+'''
 data = {
     'branch_name': 'master',  # v3
     'commit_message': 'blah blah blah',
@@ -73,6 +112,8 @@ data = {
     ]
 }
 commit = project.commits.create(data)
+'''
+
 # ---------------------------------------------------------------- #
 
 
@@ -100,6 +141,3 @@ for commit in result['commits']:
 for file_diff in result['diffs']:
     print(file_diff)
 # ---------------------------------------------------------------- #
-
-
-

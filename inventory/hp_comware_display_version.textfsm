@@ -1,0 +1,9 @@
+Value VRP_VERSION (\S+)
+Value PRODUCT_VERSION (.+)
+Value MODEL (.+)
+Value UPTIME (.+)
+
+
+Start
+  ^.*Software,\s+Version\s+${VRP_VERSION}.+\sRelease\s+${PRODUCT_VERSION}
+  ^.*\s+${MODEL}\s+uptime\s+is\s+${UPTIME}$$

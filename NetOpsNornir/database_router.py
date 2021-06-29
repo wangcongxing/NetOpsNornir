@@ -18,15 +18,15 @@ class DatabaseAppsRouter(object):
 
     def db_for_read(self, model, **hints):
         """"Point all read operations to the specific database."""
-        print(DATABASE_MAPPING[model._meta.app_label])
+        #print(DATABASE_MAPPING[model._meta.app_label])
         if model._meta.app_label in DATABASE_MAPPING:
             return DATABASE_MAPPING[model._meta.app_label]
         return None
 
     def db_for_write(self, model, **hints):
         """Point all write operations to the specific database."""
-        print(model._meta.app_label + "?")
-        print(DATABASE_MAPPING[model._meta.app_label])
+        #print(model._meta.app_label + "?")
+        #print(DATABASE_MAPPING[model._meta.app_label])
         if model._meta.app_label in DATABASE_MAPPING:
             return DATABASE_MAPPING[model._meta.app_label]
         return None

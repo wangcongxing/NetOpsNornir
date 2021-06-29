@@ -1,0 +1,7 @@
+Value Name (\S+)
+
+Start
+  ^ValueError:\s+Unsupported\s+'device_type'\s+currently\s+supported\s+platforms\s+are:$$
+  ^${Name}$$ -> Record
+
+EOF
