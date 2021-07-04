@@ -29,7 +29,9 @@ class taskListSerializer(serializers.ModelSerializer):
             # 如何返回错误信息
             return False
         # 调用查询资产接口 返回
-        result = requests.get(NetOpsAssetsUrl + "/opsassets/app/networkAssets/get_assets_info/?access_token=" + self.initial_data["access_token"] + "&orgid=" + ",".join(org_info), proxies={'http': None, 'https': None, }).json()
+        result = requests.get(
+            NetOpsAssetsUrl + "/opsassets/app/networkAssets/get_assets_info/?access_token=" + self.initial_data[
+                "access_token"] + "&orgid=" + ",".join(org_info), proxies={'http': None, 'https': None, }).json()
         print("result=", result)
         assetsInfo = result["data"]
         tasklistdetails = []
@@ -44,6 +46,9 @@ class taskListSerializer(serializers.ModelSerializer):
                             models.taskListDetails(taskList=taskList,
                                                    ip=item["mip"] if item["mip"] == "" else item["ip"],
                                                    deviceType_id=int(item["deviceType"]),
+                                                   executeState="未完成",
+                                                   oldResult="",
+                                                   jsonResult="",
                                                    textfsmtemplates=tft,
                                                    username=item["username"],
                                                    password=item["password"], port=item["port"], ))
@@ -53,9 +58,11 @@ class taskListSerializer(serializers.ModelSerializer):
 
         # 验证code
 
+
+
     class Meta:
         model = models.taskList
-        fields = ["id", "nid", "taskName", "taskStatus", "callbackurl", "callbackcount", "desc", "creator", "editor",
+        fields = ["id", "nid", "taskName", "taskStatus", "taskStatusValue","callbackurl", "callbackcount", "desc", "creator", "editor",
                   "lastTime", "createTime"]
         # depth = 1
 
@@ -86,7 +93,6 @@ class textFsmTemplatesSerializer(serializers.ModelSerializer):
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
         return super().update(instance, validated_data)
 
-
     class Meta:
         model = models.textFsmTemplates
         fields = ["id", "deviceKey", "deviceValue", "name", "cmds", "TextFSMTemplate", "desc", "createTime", "editor",
@@ -95,9 +101,6 @@ class textFsmTemplatesSerializer(serializers.ModelSerializer):
 
 
 class textFsmTemplatesSerializerExport(serializers.ModelSerializer):
-
-
-
     class Meta:
         model = models.textFsmTemplates
         fields = ["id", "deviceValue", "name", "cmds", "TextFSMTemplate", "desc", "createTime", "lastTime", "creator",

@@ -52,7 +52,66 @@ b = [['GigabitEthernet0/49', '5cdd-70e7-e851', 'GigabitEthernet0/3', 'GigabitEth
         return resp
 '''
 
+'''
 
+
+        ids = []
+        for item in tasklistdetailsid:
+            ids.append(item["id"])
+        taskListresultdetails = models.taskListResultDetails.objects.filter(taskListDetails__id__in=ids)
+        listResult = []
+        for item in taskListresultdetails:
+            jsonResult = item.jsonResult
+            if jsonResult:
+                cliValueResult = {}
+                rowDict = ast.literal_eval(jsonResult)
+                cliValueResult.update({"ip": item.taskListDetails.ip, "cmds": item.cmds, })
+                for listItem in rowDict:
+                    for k, v in listItem.items():
+                        cliValueResult.update({k: v})
+                cliValueResult.update({"tftid": item.taskListDetails.textfsmtemplates.id, "jsonResult": item.jsonResult,
+                                       "oldResult": item.oldResult})
+                listResult.append(cliValueResult)
+        cmdsSheet = taskListresultdetails.values('cmds').distinct()
+        print("cmdsSheet=", cmdsSheet)
+        # 先通过有多少个指令
+
+        # 创建工作簿
+        wb = xlwt.Workbook()
+        # 通过指令新建sheet
+        for c in cmdsSheet:
+            sheet = wb.add_sheet('网络设备数据采集')
+        # 查询list cmd 中指令相等的元素
+        # 写入excel
+        # 导出
+        return APIResponseResult.APIResponse(0, 'ok', listResult)
+
+
+        # 添加工作表
+        sheet = wb.add_sheet('网络设备数据采集')
+        if listResult:
+            colnames = listResult[0].keys()
+            # 向Excel表单中写入表头
+            for index, name in enumerate(colnames):
+                sheet.write(0, index, name)
+        for index, rItem in enumerate(listResult):
+            col = 0
+            for k, v in rItem.items():
+                sheet.write(index + 1, col, v)
+                col = col + 1
+        # 保存Excel
+        buffer = BytesIO()
+        wb.save(buffer)
+        # 将二进制数据写入响应的消息体中并设置MIME类型
+        resp = HttpResponse(buffer.getvalue(),
+                            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        # 中文文件名需要处理成百分号编码 文件名需要编码去掉特殊字符
+        filename = quote('{}.xls'.format(task.taskName))
+        # 通过响应头告知浏览器下载该文件以及对应的文件名
+        resp['content-disposition'] = f'attachment; filename*=utf-8\'\'{filename}'
+        return resp
+
+'''
 
 print(a+b)
 

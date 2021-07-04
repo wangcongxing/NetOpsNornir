@@ -145,22 +145,24 @@ def show_cmds(task):
                 f = open(textFsmTemplate)
                 template = TextFSM(f)
                 jsonResult = template.ParseText(cliText[0].result)
-                models.taskListResultDetails.objects.create(
-                    taskListDetails_id=task.host.data["data"]["nid"], cmds=item["cmd"], oldResult=cliText[0].result,
-                    jsonResult=jsonResult)
+                models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).update({
+                    "oldResult": cliText[0].result,
+                    "jsonResult": jsonResult
+                })
             elif os.path.exists(textfsm_ntc_templates):
                 # 2.如果没有配置textFSM用系统自带的,use_textfsm=True
                 results = task.run(netmiko_send_command, command_string=item["cmd"], use_textfsm=True)
                 print_result(results)
-                models.taskListResultDetails.objects.create(
-                    taskListDetails_id=task.host.data["data"]["nid"], cmds=item["cmd"], oldResult="",
-                    jsonResult=results[0].result)
+                models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).update({
+                    "jsonResult": results[0].result
+                })
+
             else:
                 # 3.使用netmiko_send_command 模块执行
                 cliText = task.run(netmiko_send_command, command_string=item["cmd"])
-                models.taskListResultDetails.objects.create(
-                    taskListDetails_id=task.host.data["data"]["nid"], cmds=item["cmd"], oldResult=cliText[0].result,
-                    jsonResult="")
+                models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).update({
+                    "oldResult": cliText[0].result
+                })
         except Exception as e:
             print("show_cmds=", e.args)
     return jsonResult
@@ -173,8 +175,8 @@ class taskListViewSet(CustomViewBase):
     ordering_fields = ('id',)  # 排序
     permission_classes = [modelPermission.taskListPermission]
 
-    @action(methods=['get'], detail=False, url_path='start')
-    def start(self, request, *args, **kwargs):
+    @action(methods=['get'], detail=False, url_path='run')
+    def run(self, request, *args, **kwargs):
         device_type_cmds = {}
         # 整合设备类型{"hp_comware":[{"cmd":"","textfsm":""}],"juniper":[{"cmd":"","textfsm":""}]}
         deviceTypes = models.textFsmTemplates.objects.all()
@@ -194,7 +196,7 @@ class taskListViewSet(CustomViewBase):
             for subItem in taskListDetailsResult:
                 devs.append(
                     {'ip': subItem.ip, 'username': subItem.username, 'password': subItem.password,
-                     'port': subItem.prot,
+                     'port': subItem.port,
                      'device_type': subItem.deviceType.deviceKey,
                      "data": {"nid": subItem.id,
                               "command_textfsm": device_type_cmds.get(subItem.deviceType.deviceKey)}})
@@ -218,36 +220,26 @@ class taskListViewSet(CustomViewBase):
             item.save()
         return APIResponseResult.APIResponse(0, "已启用")
 
-        # 下载执行结果
+    # 下载执行结果
 
-    @action(methods=['get'], detail=False, url_path='result')
-    def result(self, request, *args, **kwargs):
+    @action(methods=['get'], detail=False, url_path='runResult')
+    def runResult(self, request, *args, **kwargs):
         nid = request.data.get("nid", 0)
         if nid == 0:
             return APIResponseResult.APIResponse(-1, "参数有无请稍后再试")
-        colnames = ("IP", "CMDS",)
         task = models.taskList.objects.get(id=int(nid))
         tasklistdetails = models.taskListDetails.objects.filter(taskList=task)
-        tasklistdetailsid = tasklistdetails.values("id")
-        ids = []
-        for item in tasklistdetailsid:
-            ids.append(item["id"])
-        print("tasklistdetailsid=", ids)
-        taskListresultdetails = models.taskListResultDetails.objects.filter(taskListDetails__id__in=ids)
-
         downloadResult = {}
-        for item in taskListresultdetails:
-            if item.taskListDetails.ip in downloadResult.keys():
-                newResult = downloadResult[item.taskListDetails.ip]
-                newResult.append({"cmds": item.cmds, "jsonResult": item.jsonResult,
+        for item in tasklistdetails:
+            if item.ip in downloadResult.keys():
+                newResult = downloadResult[item.ip]
+                newResult.append({"cmds": item.textfsmtemplates.cmds, "jsonResult": item.jsonResult,
                                   "oldResult": item.oldResult})
-                downloadResult[item.taskListDetails.ip] = newResult
-
+                downloadResult[item.ip] = newResult
             else:
-                downloadResult.update({item.taskListDetails.ip: [
-                    {"cmds": item.cmds, "jsonResult": item.jsonResult,
+                downloadResult.update({item.ip: [
+                    {"cmds": item.textfsmtemplates.cmds, "jsonResult": item.jsonResult,
                      "oldResult": item.oldResult}]})
-
         return APIResponseResult.APIResponse(0, 'success', results=downloadResult,
                                              http_status=status.HTTP_200_OK, )
 
@@ -256,46 +248,75 @@ class taskListViewSet(CustomViewBase):
         nid = request.data.get("nid", 0)
         if nid == 0:
             return APIResponseResult.APIResponse(-1, "参数有无请稍后再试")
-        colnames = ("IP", "CMDS",)
         task = models.taskList.objects.get(id=int(nid))
         tasklistdetails = models.taskListDetails.objects.filter(taskList=task)
-        tasklistdetailsid = tasklistdetails.values("id")
-        ids = []
-        for item in tasklistdetailsid:
-            ids.append(item["id"])
-        taskListresultdetails = models.taskListResultDetails.objects.filter(taskListDetails__id__in=ids)
-        listResult = []
-        for item in taskListresultdetails:
-            jsonResult = item.jsonResult
-            if jsonResult:
-                cliValueResult = {}
-                rowDict = ast.literal_eval(jsonResult)
-                cliValueResult.update({"ip": item.taskListDetails.ip, "cmds": item.cmds, })
-                for listItem in rowDict:
-                    for k, v in listItem.items():
-                        cliValueResult.update({k: v})
-                cliValueResult.update({"jsonResult": item.jsonResult, "oldResult": item.oldResult})
-                listResult.append(cliValueResult)
-
-            # 创建工作簿
+        sheetNames = tasklistdetails.values("textfsmtemplates__name", "textfsmtemplates_id").distinct()
+        print("sheetNames=", sheetNames)
+        # 创建工作簿
         wb = xlwt.Workbook()
-        # 添加工作表
-        sheet = wb.add_sheet('网络设备数据采集')
-        if listResult:
-            colnames = listResult[0].keys()
-            # 向Excel表单中写入表头
-            for index, name in enumerate(colnames):
-                sheet.write(0, index, name)
-        for index, rItem in enumerate(listResult):
-            col = 0
-            for k, v in rItem.items():
-                sheet.write(index + 1, col, v)
-                col = col + 1
+        # 通过指令新建sheet
+        for sheetName in sheetNames:
+            wb.add_sheet(sheetName["textfsmtemplates__name"])
+        # 通过模版id查询 对应的结果
+        for sheetName in sheetNames:
+            rows = tasklistdetails.filter(textfsmtemplates_id=sheetName["textfsmtemplates_id"]).values("ip",
+                                                                                                       "deviceType__deviceValue",
+                                                                                                       "textfsmtemplates__cmds",
+                                                                                                       "executeState",
+                                                                                                       "oldResult",
+                                                                                                       "jsonResult",
+                                                                                                       "createTime",
+                                                                                                       "lastTime",
+                                                                                                       "creator")
+            print("rows=", rows)
+            listResult = []
+            for item in rows:
+                jsonResult = item["jsonResult"]
+                if jsonResult:
+                    rowDict = ast.literal_eval(jsonResult)
+                    for listItem in rowDict:
+                        cliValueResult = {}
+                        cliValueResult.update({"IP": item["ip"], "设备类型": item["deviceType__deviceValue"],
+                                               "指令": item["textfsmtemplates__cmds"],
+                                               "状态": item["executeState"],
+                                               "原始结果": item["oldResult"], "序列化结果": item["jsonResult"],
+                                               "创建时间": item["createTime"].strftime("%Y-%m-%d %H:%M:%S"),
+                                               "修改时间": item["lastTime"].strftime("%Y-%m-%d %H:%M:%S"),
+                                               "创建者": item["creator"]})
+                        for k, v in listItem.items():
+                            cliValueResult.update({k: v})
+                        listResult.append(cliValueResult)
+                else:
+                    # jsonResult 等于空 或取数发生错误 需要特殊处理
+                    cliValueResult = {}
+                    cliValueResult.update({"IP": item["ip"], "设备类型": item["deviceType__deviceValue"],
+                                           "指令": item["textfsmtemplates__cmds"],
+                                           "状态": item["executeState"],
+                                           "原始结果": item["oldResult"], "序列化结果": item["jsonResult"],
+                                           "创建时间": item["createTime"].strftime("%Y-%m-%d %H:%M:%S"),
+                                           "修改时间": item["lastTime"].strftime("%Y-%m-%d %H:%M:%S"),
+                                           "创建者": item["creator"]})
+            sheet = wb.get_sheet(sheetName["textfsmtemplates__name"])
+            # 写入对应的列名
+            if listResult:
+                firstItem = listResult[0]
+                colnames = firstItem.keys()
+                # 向Excel表单中写入表头
+                for index, name in enumerate(colnames):
+                    sheet.write(0, index, name)
+            # 写入结果
+            i = 1
+            for data in listResult:
+                for j, k in enumerate(data.keys()):
+                    sheet.write(i, j, data[k])
+                i = i + 1
+
         # 保存Excel
         buffer = BytesIO()
         wb.save(buffer)
         # 将二进制数据写入响应的消息体中并设置MIME类型
-        resp = HttpResponse(buffer.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        resp = HttpResponse(buffer.getvalue(),
+                            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         # 中文文件名需要处理成百分号编码 文件名需要编码去掉特殊字符
         filename = quote('{}.xls'.format(task.taskName))
         # 通过响应头告知浏览器下载该文件以及对应的文件名
@@ -309,7 +330,7 @@ class taskListViewSet(CustomViewBase):
         sheet = excel.pe.Sheet([[1, 2], [3, 4]])
         return excel.make_response(sheet, "xlsx")
 
-    # TextFSM验证
+        # TextFSM验证
 
     @action(methods=['post'], detail=False, url_path='TextFSMCheck')
     def TextFSMCheck(self, request, *args, **kwargs):
