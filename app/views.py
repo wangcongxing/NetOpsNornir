@@ -92,7 +92,7 @@ class opsBaseInitDB(APIView):
         jsonResult = getDeviceType()
         for item in jsonResult:
             d, c = models.deviceTypes.objects.update_or_create(
-                defaults={"deviceKey": item[0], "deviceValue": item[0],
+                defaults={"deviceKey": item[0], "deviceValue": item[0], "deviceState": 0,
                           'creator': superUser, 'editor': superUser},
                 deviceKey=item[0])
         # 从venv ntc_templates复制模版文件到 项目目录 ntc_templates
@@ -362,8 +362,24 @@ class deviceTypesViewSet(CustomViewBase):
     queryset = models.deviceTypes.objects.all().order_by('-id')
     serializer_class = modelSerializers.deviceTypesSerializer
     filter_class = modelFilters.deviceTypesFilter
-    ordering_fields = ('id',)  # 排序
+    ordering_fields = ('-deviceState',)  # 排序
     permission_classes = [modelPermission.deviceTypesPermission]
+    # 指定默认的排序字段
+    ordering = ('-deviceState',)
+
+
+    # 修改状态
+    @action(methods=['put'], detail=False, url_path='resetEnabled')
+    def resetEnabled(self, request, *args, **kwargs):
+        nid = request.data.get('nid', None)
+        if nid is None:
+            return APIResponseResult.APIResponse(-1, '请求发生错误,请稍后再试!')
+        deviceType = models.deviceTypes.objects.filter(id=nid).first()
+        if deviceType is None:
+            return APIResponseResult.APIResponse(-2, '请求数据不存在,请稍后再试!')
+        deviceType.deviceState = 0 if deviceType.deviceState else 1
+        deviceType.save()
+        return APIResponseResult.APIResponse(0, "已启用" if deviceType.deviceState else "已禁用")
 
 
 class textFsmTemplatesViewSet(CustomViewBase):
