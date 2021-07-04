@@ -19,6 +19,7 @@ class textFsmTemplatesExport(XLSXFileMixin, ReadOnlyModelViewSet):
         'titles': [
             "ID",
             "设备类型",
+            "名称",
             "指令",
             "TextFSM模版",
             "备注",
@@ -52,3 +53,48 @@ class textFsmTemplatesExport(XLSXFileMixin, ReadOnlyModelViewSet):
             },
         },
     }
+
+
+
+# 导出任务信息
+class deviceTypesExport(XLSXFileMixin, ReadOnlyModelViewSet):
+    queryset = models.deviceTypes.objects.all().order_by('-id')
+    serializer_class = modelSerializers.deviceTypesSerializer
+    renderer_classes = (XLSXRenderer,)
+    filename = '{}.xlsx'.format(str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
+    column_header = {
+        'titles': [
+            "ID",
+            "设备类型",
+            "设备类型显示",
+            "创建时间",
+            "修改时间",
+            "创建者",
+            "修改者",
+        ],
+        'column_width': [5, 30, 30, 40, 40, 40, 50,],
+        'height': 25,
+        'style': {
+            'fill': {
+                'fill_type': 'solid',
+                'start_color': 'FFCCFFCC',
+            },
+            'alignment': {
+                'horizontal': 'center',
+                'vertical': 'center',
+                'wrapText': True,
+                'shrink_to_fit': True,
+            },
+            'border_side': {
+                'border_style': 'thin',
+                'color': 'FF000000',
+            },
+            'font': {
+                'name': 'Arial',
+                'size': 14,
+                'bold': True,
+                'color': 'FF000000',
+            },
+        },
+    }
+

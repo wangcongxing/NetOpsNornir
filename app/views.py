@@ -39,7 +39,8 @@ import os
 from tempfile import TemporaryFile
 from io import BytesIO
 from urllib.parse import quote
-
+import ast
+import django_excel as excel
 import xlwt
 from django.http import HttpResponse
 
@@ -219,74 +220,116 @@ class taskListViewSet(CustomViewBase):
 
         # 下载执行结果
 
+    @action(methods=['get'], detail=False, url_path='result')
+    def result(self, request, *args, **kwargs):
+        nid = request.data.get("nid", 0)
+        if nid == 0:
+            return APIResponseResult.APIResponse(-1, "参数有无请稍后再试")
+        colnames = ("IP", "CMDS",)
+        task = models.taskList.objects.get(id=int(nid))
+        tasklistdetails = models.taskListDetails.objects.filter(taskList=task)
+        tasklistdetailsid = tasklistdetails.values("id")
+        ids = []
+        for item in tasklistdetailsid:
+            ids.append(item["id"])
+        print("tasklistdetailsid=", ids)
+        taskListresultdetails = models.taskListResultDetails.objects.filter(taskListDetails__id__in=ids)
+
+        downloadResult = {}
+        for item in taskListresultdetails:
+            if item.taskListDetails.ip in downloadResult.keys():
+                newResult = downloadResult[item.taskListDetails.ip]
+                newResult.append({"cmds": item.cmds, "jsonResult": item.jsonResult,
+                                  "oldResult": item.oldResult})
+                downloadResult[item.taskListDetails.ip] = newResult
+
+            else:
+                downloadResult.update({item.taskListDetails.ip: [
+                    {"cmds": item.cmds, "jsonResult": item.jsonResult,
+                     "oldResult": item.oldResult}]})
+
+        return APIResponseResult.APIResponse(0, 'success', results=downloadResult,
+                                             http_status=status.HTTP_200_OK, )
+
     @action(methods=['get'], detail=False, url_path='downloadResult')
     def downloadResult(self, request, *args, **kwargs):
         nid = request.data.get("nid", 0)
         if nid == 0:
             return APIResponseResult.APIResponse(-1, "参数有无请稍后再试")
         colnames = ("IP", "CMDS",)
-        task = models.taskList.objects.get(int(nid))
+        task = models.taskList.objects.get(id=int(nid))
         tasklistdetails = models.taskListDetails.objects.filter(taskList=task)
-        taskListresultdetails = models.taskListResultDetails.objects.filter(taskListDetails=tasklistdetails)
-        # 创建工作簿
+        tasklistdetailsid = tasklistdetails.values("id")
+        ids = []
+        for item in tasklistdetailsid:
+            ids.append(item["id"])
+        taskListresultdetails = models.taskListResultDetails.objects.filter(taskListDetails__id__in=ids)
+        listResult = []
+        for item in taskListresultdetails:
+            jsonResult = item.jsonResult
+            if jsonResult:
+                cliValueResult = {}
+                rowDict = ast.literal_eval(jsonResult)
+                cliValueResult.update({"ip": item.taskListDetails.ip, "cmds": item.cmds, })
+                for listItem in rowDict:
+                    for k, v in listItem.items():
+                        cliValueResult.update({k: v})
+                cliValueResult.update({"jsonResult": item.jsonResult, "oldResult": item.oldResult})
+                listResult.append(cliValueResult)
+
+            # 创建工作簿
         wb = xlwt.Workbook()
-
         # 添加工作表
-        sheet = wb.add_sheet('老师信息表')
-        sheet1 = wb.add_sheet('老师信息表1')
-        sheet2 = wb.add_sheet('老师信息表2')
-        sheet3 = wb.add_sheet('老师信息表3')
-        sheet4 = wb.add_sheet('老师信息表4')
-
-        # 查询所有老师的信息
-        queryset = []  # Teacher.objects.all()
-        # 向Excel表单中写入表头
-        colnames = ('姓名', '介绍', '好评数', '差评数', '学科')
-        for index, name in enumerate(colnames):
-            sheet.write(0, index, name)
-        # 向单元格中写入老师的数据
-        props = ('name', 'detail', 'good_count', 'bad_count', 'subject')
-        for row, teacher in enumerate(queryset):
-            for col, prop in enumerate(props):
-                value = getattr(teacher, prop, '')
-                if isinstance(value, Subject):
-                    value = value.name
-                sheet.write(row + 1, col, value)
+        sheet = wb.add_sheet('网络设备数据采集')
+        if listResult:
+            colnames = listResult[0].keys()
+            # 向Excel表单中写入表头
+            for index, name in enumerate(colnames):
+                sheet.write(0, index, name)
+        for index, rItem in enumerate(listResult):
+            col = 0
+            for k, v in rItem.items():
+                sheet.write(index + 1, col, v)
+                col = col + 1
         # 保存Excel
         buffer = BytesIO()
         wb.save(buffer)
         # 将二进制数据写入响应的消息体中并设置MIME类型
-        resp = HttpResponse(buffer.getvalue(), content_type='application/vnd.ms-excel')
-        # 中文文件名需要处理成百分号编码
-        filename = quote('老师.xls')
+        resp = HttpResponse(buffer.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        # 中文文件名需要处理成百分号编码 文件名需要编码去掉特殊字符
+        filename = quote('{}.xls'.format(task.taskName))
         # 通过响应头告知浏览器下载该文件以及对应的文件名
         resp['content-disposition'] = f'attachment; filename*=utf-8\'\'{filename}'
         return resp
 
-        @action(methods=['get'], detail=False, url_path='getDeviceCmd')
-        def getDeviceCmd(self, request, *args, **kwargs):
-            pass
+    # 下载excel 实例
+    # https://cloud.tencent.com/developer/article/1518588
+    @action(methods=['get'], detail=False, url_path='downLoadFile')
+    def downLoadFile(self, request, *args, **kwargs):
+        sheet = excel.pe.Sheet([[1, 2], [3, 4]])
+        return excel.make_response(sheet, "xlsx")
 
-        # TextFSM验证
-        @action(methods=['post'], detail=False, url_path='TextFSMCheck')
-        def TextFSMCheck(self, request, *args, **kwargs):
-            CLIText = request.data.get("CLIText", "")
-            fsmtext = request.data.get("fsmtext", "")
-            if CLIText == "" or fsmtext == "":
-                return APIResponseResult.APIResponse(-1, '参数有误,请检查后在重试', )
-            result = []
-            try:
-                with TemporaryFile('w+t') as f:
-                    # Read/write to the file
-                    f.write(fsmtext)
-                    # Seek back to beginning and read the data
-                    f.seek(0)
-                    template = TextFSM(f)
-                    result = template.ParseText(CLIText)
-            except Exception as e:
-                result.append({"msg": e.args})
-            return APIResponseResult.APIResponse(0, 'success', results=result,
-                                                 http_status=status.HTTP_200_OK, )
+    # TextFSM验证
+
+    @action(methods=['post'], detail=False, url_path='TextFSMCheck')
+    def TextFSMCheck(self, request, *args, **kwargs):
+        CLIText = request.data.get("CLIText", "")
+        fsmtext = request.data.get("fsmtext", "")
+        if CLIText == "" or fsmtext == "":
+            return APIResponseResult.APIResponse(-1, '参数有误,请检查后在重试', )
+        result = []
+        try:
+            with TemporaryFile('w+t') as f:
+                # Read/write to the file
+                f.write(fsmtext)
+                # Seek back to beginning and read the data
+                f.seek(0)
+                template = TextFSM(f)
+                result = template.ParseText(CLIText)
+        except Exception as e:
+            result.append({"msg": e.args})
+        return APIResponseResult.APIResponse(0, 'success', results=result,
+                                             http_status=status.HTTP_200_OK, )
 
 
 class taskListDetailsViewSet(CustomViewBase):

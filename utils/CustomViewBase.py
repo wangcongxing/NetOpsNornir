@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import filters
 from django_filters import rest_framework
 from django_filters.rest_framework import DjangoFilterBackend
-
+from django.http import QueryDict
 
 # 设置分页
 class LargeResultsSetPagination(PageNumberPagination):
@@ -24,7 +24,7 @@ class LargeResultsSetPagination(PageNumberPagination):
 
 class CustomViewBase(viewsets.ModelViewSet):
     # 注意不是列表（只能有一个分页模式）
-    #pagination_class = PageNumberPagination
+    # pagination_class = PageNumberPagination
     # 自定义分页模式，不要写在base类中，如需要单独配置，请在views中通过继承的方式重写
     pagination_class = LargeResultsSetPagination
     # filter_class = ServerFilter
@@ -36,7 +36,12 @@ class CustomViewBase(viewsets.ModelViewSet):
     filter_backends = (rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter,)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        username = request.user["username"]
+
+        data = QueryDict(request.data.urlencode(), mutable=True)
+
+        data.update({"creator": username, "editor": username})
+        serializer = self.get_serializer(data=data)
 
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -64,9 +69,12 @@ class CustomViewBase(viewsets.ModelViewSet):
         return APIResponseResult.APIResponse(0, 'success', results=serializer.data, http_status=status.HTTP_200_OK, )
 
     def update(self, request, *args, **kwargs):
+        username = request.user["username"]
+        data = QueryDict(request.data.urlencode(), mutable=True)
+        data.update({"creator": username, "editor": username})
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 

@@ -185,8 +185,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 项目常用配置文件
 initConfig = {
-    "NTC_TEMPLATES_DIR": NTC_TEMPLATES_DIR
+    "NTC_TEMPLATES_DIR": NTC_TEMPLATES_DIR,
+    "NetOpsAssetsUrl": "http://127.0.0.1:7001",  # 资产项目请求地址
 }
+# 配置django-excel
+FILE_UPLOAD_HANDLERS = (
+    "django_excel.ExcelMemoryFileUploadHandler",
+    "django_excel.TemporaryExcelFileUploadHandler",
+)
 
 # REST_FRAMEWORK JWT 验证
 REST_FRAMEWORK = {
@@ -196,8 +202,8 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.AllowAny',
     ),
     # 分页配置
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    #'PAGE_SIZE': 10,
     # 配置导出excel
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
