@@ -1,0 +1,17 @@
+Value Filldown Name (\S+)
+Value Chassis_ID (\d)
+Value Slot_ID (\d)
+Value CPU_ID (\d)
+Value CPU_usage_in_last_5_seconds (\S+)
+Value CPU_usage_in_last_1_minute (\S+)
+Value CPU_usage_in_last_5_minutes (\S+)
+
+
+Start
+  ^<${Name}>display\s+cpu-usage$$
+  ^Chassis\s+${Chassis_ID}\s+Slot\s+${Slot_ID}\s+CPU\s+${CPU_ID}\s+CPU\s+usage:$$
+  ^\s+${CPU_usage_in_last_5_seconds}\s+in\s+last\s+\d\s+seconds$$
+  ^\s+${CPU_usage_in_last_1_minute}\s+in\s+last\s+\d\s+minute$$
+  ^\s+${CPU_usage_in_last_5_minutes}\s+in\s+last\s+\d\s+minutes$$ -> Record
+
+EOF

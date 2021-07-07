@@ -1,0 +1,16 @@
+Value Filldown Name (\S+)
+Value Item (Chassis|Midplane|Routing\sEngine|FPC\s0|PIC\s0|Power\sSupply\s0|Power\sSupply\s1)
+Value Version (\w+\s+\d+)
+Value Part_number ([\d+-]+)
+Value Serial_number (\w+)
+Value Description ([\S+\s+]+)
+
+Start
+  ^.*@${Name}>\s+show\s+chassis\s+hardware.*$$
+  ^${Item}\s+${Version}\s+${Part_number}\s+${Serial_number}\s+${Description}$$ -> Record
+  ^${Item}\s+${Version}\s+${Part_number}\s+${Serial_number}\s+$$ -> Record
+  ^${Item}\s+${Serial_number}\s+${Description}$$ -> Record
+  ^\s+${Item}\s+${Description}$$ -> Record
+  ^${Item}\s+${Description}$$ -> Record
+
+EOF

@@ -1,0 +1,32 @@
+Value Filldown Name (\S+)
+Value CLOCK_STATUS (\w+)
+Value CLOCK_STRATUM (\d+)
+Value SYSTEM_PEER (\S+)
+Value LOCAL_MODE (\w+)
+Value REFERENCE_CLOCK_ID (\S+)
+Value LEAP_INDICATOR (\d+)
+Value CLOCK_JITTER ([\S+\s+]+)
+Value STABILITY ([\S+\s+]+)
+Value CLOCK_PRECISION (\S+)
+Value ROOT_DELAY ([\S+\s+]+)
+Value ROOT_DISPERSION ([\S+\s+]+)
+Value REFERENCE_TIME ([\S+\s+]+)
+Value SYSTEM_POLL_INTERVAL ([\S+\s+]+)
+
+Start
+  ^<${Name}>dis\s+ntp\s+status$$
+  ^\s+Clock\s+status:\s+${CLOCK_STATUS}$$
+  ^\s+Clock\s+stratum:\s+${CLOCK_STRATUM}\s+$$
+  ^\s+System\s+peer:\s+${SYSTEM_PEER}\s+$$
+  ^\s+Local\s+mode:\s+${LOCAL_MODE}$$
+  ^\s+Reference\s+clock\s+ID:\s+${REFERENCE_CLOCK_ID}$$
+  ^\s+Leap\s+indicator:\s+${LEAP_INDICATOR}$$
+  ^\s+Clock\s+jitter:\s+${CLOCK_JITTER}$$
+  ^\s+Stability:\s+${STABILITY}\s+$$
+  ^\s+Clock\s+precision:\s+${CLOCK_PRECISION}$$
+  ^\s+Root\s+delay:\s+${ROOT_DELAY}\s+$$
+  ^\s+Root\s+dispersion:\s+${ROOT_DISPERSION}\s+$$
+  ^\s+Reference\s+time:\s+${REFERENCE_TIME}$$
+  ^\s+System\s+poll\s+interval:\s+${SYSTEM_POLL_INTERVAL}$$ -> Record
+
+EOF

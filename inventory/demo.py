@@ -28,7 +28,7 @@ from nornir_utils.plugins.functions import print_result
 '''
 nr = InitNornir(config_file="config.yaml")
 #display lldp neighbor
-results = nr.run(netmiko_send_command, command_string='display device', use_textfsm=True)
+results = nr.run(netmiko_send_command, command_string='display lldp neighbor verbose', use_textfsm=True)
 
 print_result(results)
 '''

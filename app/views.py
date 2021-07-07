@@ -43,6 +43,7 @@ import ast
 import django_excel as excel
 import xlwt
 from django.http import HttpResponse
+from netmiko import ConnectHandler
 
 ENV_PROFILE = os.getenv("ENV")
 if ENV_PROFILE == "pro":
@@ -109,7 +110,8 @@ InventoryPluginRegister.register("cmdb_inventory", CMDBInventory)
 
 
 def show_cmds(task):
-    print(task.host, "=====", task.host.name)
+    print("task.host=====", task.host)
+    print("task.host.name=====", task.host.name)
     command_textfsm = task.host.data["data"]["command_textfsm"]
     # Task类通过host属性，读取yaml配置，获取其中设备信息
     # 判断文件是否存在
@@ -145,27 +147,108 @@ def show_cmds(task):
                 f = open(textFsmTemplate)
                 template = TextFSM(f)
                 jsonResult = template.ParseText(cliText[0].result)
-                models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).update({
-                    "oldResult": cliText[0].result,
-                    "jsonResult": jsonResult
-                })
+                taskListdetails = models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).first()
+                taskListdetails.oldResult = cliText[0].result
+                taskListdetails.jsonResult = jsonResult
+                taskListdetails.save()
             elif os.path.exists(textfsm_ntc_templates):
                 # 2.如果没有配置textFSM用系统自带的,use_textfsm=True
                 results = task.run(netmiko_send_command, command_string=item["cmd"], use_textfsm=True)
                 print_result(results)
-                models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).update({
-                    "jsonResult": results[0].result
-                })
+                taskListdetails = models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).first()
+                taskListdetails.jsonResult = jsonResult
+                taskListdetails.save()
 
             else:
                 # 3.使用netmiko_send_command 模块执行
                 cliText = task.run(netmiko_send_command, command_string=item["cmd"])
-                models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).update({
-                    "oldResult": cliText[0].result
-                })
+                taskListdetails = models.taskListDetails.objects.filter(id=task.host.data["data"]["nid"]).first()
+                taskListdetails.oldResult = cliText[0].result
+                taskListdetails.save()
+
         except Exception as e:
-            print("show_cmds=", e.args)
+            print("show_cmds=", e)
     return jsonResult
+
+
+# 通过netmiko 获取数据
+def run_netmiko(dev):
+    try:
+        dev_info = {
+            "device_type": dev["device_type"],
+            "ip": dev["ip"],
+            "username": dev["username"],
+            "password": dev["password"],
+            "conn_timeout": 20,
+            "port": 22,
+            # 'global_delay_factor': 1
+        }
+        nid = dev["nid"]
+        firstCmds = dev["firstCmds"]
+        cmd = dev["cmd"]
+        textfsm = dev["textfsm"]
+
+        # Task类通过host属性，读取yaml配置，获取其中设备信息
+        # 判断文件是否存在
+        # 不存在创建/有直接使用
+        # 3.如果自己配置的textFSM报错,则使用系统模版use_textfsm=True
+        jsonResult = []
+        # 自定义textFSM不为空，并且自定义文件夹存在textFSM模版
+        oldResult = ""
+        with ConnectHandler(**dev_info) as conn:
+            print("已经成功登陆交换机" + dev_info['ip'])
+            print("nid=", nid)
+            # 系统虚拟环境路径
+            textfsm_ntc_templates = site.getsitepackages()[0] + "/ntc_templates/templates/" + dev_info[
+                "device_type"] + "_" + cmd.replace(" ", "_") + ".textfsm"
+            # 自定TextFSM模版路径
+            textFsmTemplate = os.path.join(NTC_TEMPLATES_DIR,
+                                           '{}_{}.textfsm'.format(dev_info["device_type"], cmd.replace(" ", "_")))
+            # 记录下来用户回溯
+            historyInfo = {}
+
+            command_cmds = str(firstCmds + "," + cmd).replace("/n", ",").split(',')
+            for cmd_text in command_cmds:
+                oldResult = conn.send_command_timing(cmd_text)
+                historyInfo.update({cmd_text: oldResult})
+
+            if textfsm != "" or os.path.exists(textFsmTemplate):
+                # 1.如果配置textFSM就用配置的
+                if not os.path.exists(textFsmTemplate):
+                    f = open(textFsmTemplate, mode='w+', encoding='UTF-8')
+                    # open()打开一个文件，返回一个文件对象
+                    f.write(textfsm)  # 写入textfsm
+                    f.close()
+                # print(cmd)
+                # Task类调用run方法，执行任务，如netmiko_send_command、write_file等插件use_textfsm=True
+                # 为什么不用use_textfsm=True  自定义模版需要频繁改动index文件 风险高
+                # output = result.result
+                oldResult = historyInfo[cmd]
+                f = open(textFsmTemplate)
+                template = TextFSM(f)
+                jsonResult = template.ParseTextToDicts(oldResult)  # template.ParseText(oldResult)
+                taskListdetails = models.taskListDetails.objects.filter(id=nid).first()
+                taskListdetails.oldResult = oldResult
+                taskListdetails.jsonResult = jsonResult
+                taskListdetails.save()
+            elif os.path.exists(textfsm_ntc_templates):
+                # 2.如果没有配置textFSM用系统自带的,use_textfsm=True
+                results = conn.send_command_timing(cmd, use_textfsm=True)
+                print_result(results)
+                taskListdetails = models.taskListDetails.objects.filter(id=nid).first()
+                taskListdetails.jsonResult = jsonResult
+                taskListdetails.save()
+            else:
+                # 3.使用netmiko_send_command 模块执行
+                taskListdetails = models.taskListDetails.objects.filter(id=nid).first()
+                taskListdetails.oldResult = oldResult
+                taskListdetails.save()
+
+    except Exception as e:
+        print("Exception=", e.args, "nid=", nid)
+
+
+from concurrent.futures import ThreadPoolExecutor
 
 
 class taskListViewSet(CustomViewBase):
@@ -177,47 +260,51 @@ class taskListViewSet(CustomViewBase):
 
     @action(methods=['get'], detail=False, url_path='run')
     def run(self, request, *args, **kwargs):
-        device_type_cmds = {}
-        # 整合设备类型{"hp_comware":[{"cmd":"","textfsm":""}],"juniper":[{"cmd":"","textfsm":""}]}
-        deviceTypes = models.textFsmTemplates.objects.all()
-        for ditem in deviceTypes:
-            if ditem.deviceType.deviceKey in device_type_cmds.keys():
-                device_type_cmds[ditem.deviceType.deviceKey].append(
-                    {"cmd": ditem.cmds, "textfsm": ditem.TextFSMTemplate})
-            else:
-                rlist = []
-                rlist.append({"cmd": ditem.cmds, "textfsm": ditem.TextFSMTemplate})
-                device_type_cmds.update({ditem.deviceType.deviceKey: rlist})
-        print("device_type_cmds=", device_type_cmds)
-        taskListResult = models.taskList.objects.filter(taskStatus=0)
+        # print("device_type_cmds=", device_type_cmds)
+        nid = request.GET.get("nid", None)
+        if nid is None:
+            taskListResult = models.taskList.objects.filter(taskStatus=0)[0:3]
+        else:
+            taskListResult = models.taskList.objects.filter(id=int(nid))
+        command_list = []
         for item in taskListResult:
-            taskListDetailsResult = models.taskListDetails.objects.filter(taskList=item)
+            taskListDetailsResult = models.taskListDetails.objects.filter(taskList=item, oldResult="")  #
             devs = []
             for subItem in taskListDetailsResult:
                 devs.append(
                     {'ip': subItem.ip, 'username': subItem.username, 'password': subItem.password,
                      'port': subItem.port,
                      'device_type': subItem.deviceType.deviceKey,
-                     "data": {"nid": subItem.id,
-                              "command_textfsm": device_type_cmds.get(subItem.deviceType.deviceKey)}})
-            print("devs=", devs)
-            nr = InitNornir(
-                runner={
-                    "plugin": "threaded",
-                    "options": {
-                        "num_workers": 100,
-                    },
+                     "nid": subItem.id,
+                     "firstCmds": subItem.textfsmtemplates.firstCmds,
+                     "cmd": subItem.textfsmtemplates.cmds,
+                     "textfsm": subItem.textfsmtemplates.TextFSMTemplate})
+            command_list.append({"devs": devs})
+        # print("command_list=", command_list)
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            for commandList in command_list:
+                executor.map(run_netmiko, commandList["devs"])
+        '''
+        nr = InitNornir(
+            runner={
+                "plugin": "threaded",
+                "options": {
+                    "num_workers": 100,
                 },
-                inventory={
-                    "plugin": "cmdb_inventory",
-                    "options": {
-                        "devices": devs,
-                    },
+            },
+            inventory={
+                "plugin": "cmdb_inventory",
+                "options": {
+                    "devices": devs,
                 },
-            )
-            results = nr.run(task=show_cmds)
-            # item.taskStatus = 2
-            item.save()
+            },
+        )
+        results = nr.run(task=show_cmds)
+        # item.taskStatus = 2
+        '''
+        # item.taskStatus = 2
+        # item.save()
+
         return APIResponseResult.APIResponse(0, "已启用")
 
     # 下载执行结果
@@ -233,12 +320,14 @@ class taskListViewSet(CustomViewBase):
         for item in tasklistdetails:
             if item.ip in downloadResult.keys():
                 newResult = downloadResult[item.ip]
-                newResult.append({"cmds": item.textfsmtemplates.cmds, "jsonResult": item.jsonResult,
+                newResult.append({"cmds": item.textfsmtemplates.cmds, "TextFSM": item.textfsmtemplates.TextFSMTemplate,
+                                  "jsonResult": item.jsonResult,
                                   "oldResult": item.oldResult})
                 downloadResult[item.ip] = newResult
             else:
                 downloadResult.update({item.ip: [
-                    {"cmds": item.textfsmtemplates.cmds, "jsonResult": item.jsonResult,
+                    {"cmds": item.textfsmtemplates.cmds, "TextFSM": item.textfsmtemplates.TextFSMTemplate,
+                     "jsonResult": item.jsonResult,
                      "oldResult": item.oldResult}]})
         return APIResponseResult.APIResponse(0, 'success', results=downloadResult,
                                              http_status=status.HTTP_200_OK, )
@@ -366,7 +455,6 @@ class deviceTypesViewSet(CustomViewBase):
     permission_classes = [modelPermission.deviceTypesPermission]
     # 指定默认的排序字段
     ordering = ('-deviceState',)
-
 
     # 修改状态
     @action(methods=['put'], detail=False, url_path='resetEnabled')

@@ -1,0 +1,37 @@
+Value Filldown Name (\S+)
+Value Chassis_ID (\d)
+Value SLOT_ID (\d)
+Value STATUS ([a-zA-Z]+)
+Value TYPE_NAME (\w+)
+Value SOFT_VER (\S+)
+Value PCB_1_VER (\S+)
+Value FPGA_VER (\d+)
+Value BootRom_VER (\d+)
+Value CPLD_1_VER (\d+)
+Value CPLD_2_VER (\d+)
+Value CHIP (\d+)
+Value LEARNING_MODE (\w+)
+
+Start
+  ^<${Name}>display\s+device\s+verbose$$
+  ^Chassis\s+${Chassis_ID}\s+Slot\s+${SLOT_ID}\s+info:$$
+  ^Status\s+:\s+${STATUS}$$
+  ^Type\s+:\s+${TYPE_NAME}$$
+  ^Software\s+Ver\s+:\s+${SOFT_VER}$$
+  ^PCB\s+1\s+Ver\s+:\s+${PCB_1_VER}$$
+  ^FPGA\s+Ver\s+:\s+${FPGA_VER}$$
+  ^BootRom\s+Ver\s+:\s+${BootRom_VER}$$
+  ^CPLD\s+1\s+Ver\s+:\s+${CPLD_1_VER}$$
+  ^CPLD\s+2\s+Ver\s+:\s+${CPLD_2_VER}$$ -> Record
+  ^Chassis\s+${Chassis_ID}\s+Slot\s+${SLOT_ID}\s+info:$$
+  ^Status\s+:\s+${STATUS}$$
+  ^Type\s+:\s+${TYPE_NAME}$$
+  ^Software\s+Ver\s+:\s+${SOFT_VER}$$
+  ^PCB\s+1\s+Ver\s+:\s+${PCB_1_VER}$$
+  ^FPGA\s+Ver\s+:\s+${FPGA_VER}$$
+  ^BootRom\s+Ver\s+:\s+${BootRom_VER}$$
+  ^CPLD\s+1\s+Ver\s+:\s+${CPLD_1_VER}$$
+  ^Chip\s+:\s+${CHIP}$$
+  ^\s+Learning\s+Mode:\s+${LEARNING_MODE}$$ -> Record
+
+EOF

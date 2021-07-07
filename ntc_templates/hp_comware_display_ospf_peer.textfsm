@@ -1,0 +1,18 @@
+Value Filldown Name (\S+)
+Value Filldown Process_ID (\d)
+Value Filldown Router_ID (\S+)
+Value Filldown Area_ID (\S+)
+Value Peer_Router_ID (\S+)
+Value Address_ID (\S+)
+Value Pri (\d+)
+Value Dead_Time (\d+)
+Value State (\S+)
+Value Interface (\S+)
+
+Start
+  ^<${Name}>display\s+ospf\s+peer$$
+  ^\s+OSPF\s+Process\s+${Process_ID}\s+with\s+Router\s+ID\s+${Router_ID}$$
+  ^\s+Area:\s+${Area_ID}\s+$$
+  ^\s+${Peer_Router_ID}\s+${Address_ID}\s+${Pri}\s+${Dead_Time}\s+${State}\s+${Interface}$$ -> Record
+
+EOF

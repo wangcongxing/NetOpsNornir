@@ -1,0 +1,13 @@
+Value Filldown Name (\S+)
+Value fileSystem (\S+)
+Value Size (\S+)
+Value Used (\S+)
+Value Avail (\S+)
+Value Capacity (\S+)
+Value Mounted_on (\S+)
+
+Start
+  ^.*@${Name}>\s+show\s+system\s+storage.*$$
+  ^${fileSystem}\s+${Size}\s+${Used}\s+${Avail}\s+${Capacity}\s+${Mounted_on}$$ -> Record
+
+EOF

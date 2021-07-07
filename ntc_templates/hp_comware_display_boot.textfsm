@@ -1,0 +1,19 @@
+Value Filldown Name (\S+)
+Value Chassis_ID (\d)
+Value Slot_ID (\d)
+Value Current_software_images (\S+)
+Value Main_startup_software_images (\S+)
+Value Backup_startup_software_images (\S+)
+
+
+Start
+  ^<${Name}>display\s+boot$$
+  ^Software\s+images\s+on\s+chassis\s+${Chassis_ID}\s+slot\s+${Slot_ID}:$$
+  ^Current\s+software\s+images:$$
+  ^\s+${Current_software_images}$$ -> Record
+  ^Main\s+startup\s+software\s+images:$$
+  ^\s+${Main_startup_software_images}$$ -> Record
+  ^Backup\s+startup\s+software\s+images:$$
+  ^\s+${Backup_startup_software_images}$$ -> Record
+
+EOF

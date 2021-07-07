@@ -1,0 +1,65 @@
+Value Filldown Name (\S+)
+Value Version ([\S+\s+]+)
+Value Uptime ([\S+\s+]+)
+Value Last_reboot_reason ([\S+\s+]+)
+Value Boot_image (\S+)
+Value Boot_image_version (\S+)
+Value System_image (\S+)
+Value System_image_version (\S+)
+Value Feature_image (\S+)
+Value Feature_image_version (\S+)
+Value Chassis_ID (\d)
+Value Slot_ID (\d)
+Value BOARD_TYPE (\w+)
+Value DRAM ([\S+\s+]+)
+Value FLASH ([\S+\s+]+)
+Value NVRAM ([\S+\s+]+)
+Value PCB_1_Version ([\S+\s+]+)
+Value Bootrom_Version ([\S+\s+]+)
+Value CPLD_1_Version ([\S+\s+]+)
+Value CPLD_2_Version ([\S+\s+]+)
+Value PowChip_Version ([\S+\s+]+)
+Value Release_Version ([\S+\s+]+)
+Value Patch_Version ([\S+\s+]+)
+Value Reboot_Cause (\w+)
+
+Start
+  ^<${Name}>display\s+version$$
+  ^.*Software,\s+Version\s+${Version},\s+Release.*$$
+  ^.*uptime\s+is\s+${Uptime}$$
+  ^Last\s+reboot\s+reason\s+:\s+${Last_reboot_reason}$$
+  ^Boot\s+image:\s+flash:${Boot_image}$$
+  ^Boot\s+image\s+version:\s+${Boot_image_version},\s+Release.*$$
+  ^System\s+image:\s+flash:${System_image}$$
+  ^System\s+image\s+version:\s+${System_image_version},\s+Release.*$$ -> Record
+  ^Feature\s+image\(s\)\s+list:$$
+  ^\s+flash:${Feature_image},\s+version:\s+${Feature_image_version}$$ -> Record
+  ^.*Chassis\s+${Chassis_ID}\s+Slot\s+${Slot_ID}:$$
+  ^Uptime\s+is\s+${Uptime}$$
+  ^BOARD\s+TYPE:\s+${BOARD_TYPE}$$
+  ^DRAM:\s+${DRAM}$$
+  ^FLASH:\s+${FLASH}$$
+  ^NVRAM:\s+${NVRAM}$$
+  ^PCB\s+1\s+Version:\s+${PCB_1_Version}$$
+  ^Bootrom\s+Version:\s+${Bootrom_Version}$$
+  ^CPLD\s+1\s+Version:\s+${CPLD_1_Version}$$
+  ^CPLD\s+2\s+Version:\s+${CPLD_2_Version}$$
+  ^PowChip\s+Version:\s+${PowChip_Version}$$
+  ^Release\s+Version:\s+${Release_Version}$$
+  ^Patch\s+Version\s+:\s+${Patch_Version}$$
+  ^Reboot\s+Cause\s+:\s+${Reboot_Cause}$$ -> Record
+  ^.*Chassis\s+${Chassis_ID}\s+Slot\s+${Slot_ID}:$$
+  ^Uptime\s+is\s+${Uptime}$$
+  ^BOARD\s+TYPE:\s+${BOARD_TYPE}$$
+  ^DRAM:\s+${DRAM}$$
+  ^FLASH:\s+${FLASH}$$
+  ^NVRAM:\s+${NVRAM}$$
+  ^PCB\s+1\s+Version:\s+${PCB_1_Version}$$
+  ^Bootrom\s+Version:\s+${Bootrom_Version}$$
+  ^CPLD\s+1\s+Version:\s+${CPLD_1_Version}$$
+  ^PowChip\s+Version:\s+${PowChip_Version}$$
+  ^Release\s+Version:\s+${Release_Version}$$
+  ^Patch\s+Version\s+:\s+${Patch_Version}$$
+  ^Reboot\s+Cause\s+:\s+${Reboot_Cause}$$ -> Record
+
+EOF

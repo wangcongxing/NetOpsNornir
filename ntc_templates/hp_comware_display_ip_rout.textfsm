@@ -1,0 +1,16 @@
+Value Filldown Name (\S+)
+Value Filldown Destinations (\d+)
+Value Filldown Routes (\d+)
+Value Destination_or_Mask ([\d+\.\/]+)
+Value Proto (\S+)
+Value Pre (\d+)
+Value Cost (\d+)
+Value NextHop (\S+)
+Value Interface (\S+)
+
+Start
+  ^<${Name}>display\s+ip\s+rout$$
+  ^Destinations\s+:\s+${Destinations}\s+Routes\s+:\s+${Routes}$$
+  ^${Destination_or_Mask}\s+${Proto}\s+${Pre}\s+${Cost}\s+${NextHop}\s+${Interface}$$ -> Record
+
+EOF

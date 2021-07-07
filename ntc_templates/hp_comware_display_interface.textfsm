@@ -1,0 +1,69 @@
+Value Filldown Name (\S+)
+Value Interface (\S+)
+Value Current_State (UP|DOWN)
+Value Line_protocol_state (UP|DOWN)
+Value Maximum_transmission_unit (\d+)
+Value Broadcast_max_ratio (\d+%)
+Value Multicast_max_ratio (\d+%)
+Value Unicast_max_ratio (\d+%)
+Value PVID (\d+)
+Value Internet_address ([\S+\s+]+)
+Value IP_frame_type ([\S+\s+]+)
+Value IPv6_frame_type ([\S+\s+]+)
+Value Hardware_address (\S+)
+Value Bandwidth ([\S+\s+]+)
+Value Media_type ([\S+\s+]+)
+Value Port_hardware_type ([\S+\s+]+)
+Value Port_priority (\d+)
+Value Link_speed_type ([\S+\s+]+)
+Value Link_duplex_type ([\S+\s+]+)
+Value Maximum_frame_length (\d+)
+Value MDI_type ([\S+\s+]+)
+Value Port_link_type (\w+)
+Value Tagged_VLANs (\S+)
+Value Untagged_VLANs (\S+)
+Value Last_link_flapping ([\S+\s+]+)
+Value Last_clearing_of_counters ([\S+\s+]+)
+Value Peak_input_rate ([\S+\s+]+)
+Value Peak_output_rate ([\S+\s+]+)
+Value Last_300_second_input ([\S+\s+]+)
+Value Last_300_second_output ([\S+\s+]+)
+Value Total_input ([\S+\s+]+)
+Value Normal_input ([\S+\s+]+)
+Value Total_output ([\S+\s+]+)
+Value Normal_output ([\S+\s+]+)
+
+Start
+  ^<${Name}>display\s+interface$$
+  ^${Interface}$$
+  ^Current\s+state:\s+${Current_State}$$
+  ^Line\s+protocol\s+state:\s+${Line_protocol_state}$$
+  ^Maximum\s+transmission\s+unit:\s+${Maximum_transmission_unit}$$
+  ^Broadcast\s+max-ratio:\s+${Broadcast_max_ratio}$$
+  ^Multicast\s+max-ratio:\s+${Multicast_max_ratio}$$
+  ^Unicast\s+max-ratio:\s+${Unicast_max_ratio}$$
+  ^PVID:\s+${PVID}$$
+  ^Internet\s+address:\s+${Internet_address}$$
+  ^IP\s+packet\s+frame\s+type:\s+${IP_frame_type},\s+hardware\s+address:\s+${Hardware_address}$$
+  ^IPv6\s+packet\s+frame\s+type:\s+${IPv6_frame_type},.*$$
+  ^Bandwidth:\s+${Bandwidth}$$
+  ^Media\s+type\s+is\s+${Media_type},\s+port\s+hardware\s+type\s+is\s+${Port_hardware_type}$$
+  ^Port\s+priority:\s+${Port_priority}$$
+  ^Link\s+speed\s+type\s+is\s+${Link_speed_type},\s+link\s+duplex\s+type\s+is\s+${Link_duplex_type}$$
+  ^Maximum\s+frame\s+length:\s${Maximum_frame_length}$$
+  ^MDI\s+type:\s+${MDI_type}$$
+  ^Port\s+link-type:\s+${Port_link_type}$$
+  ^\s+Tagged\s+VLANs:\s+${Tagged_VLANs}$$
+  ^\s+Untagged\s+VLANs:\s+${Untagged_VLANs}$$
+  ^Last\s+link\s+flapping:\s+${Last_link_flapping}$$
+  ^Last\s+clearing\s+of\s+counters:\s+${Last_clearing_of_counters}$$
+  ^\s+Peak\s+input\s+rate:\s+${Peak_input_rate}\s+$$
+  ^\s+Peak\s+output\s+rate:\s+${Peak_output_rate}\s+$$
+  ^\s+Last\s+300\s+second\s+input:\s+${Last_300_second_input}$$
+  ^\s+Last\s+300\s+second\s+output:\s+${Last_300_second_output}$$
+  ^\s+Input\s+\(total\):\s+${Total_input}$$
+  ^\s+Input\s+\(normal\):\s+${Normal_input}$$
+  ^\s+Output\s+\(total\):\s+${Total_output}$$
+  ^\s+Output\s+\(normal\):\s+${Normal_output}$$ -> Record
+
+EOF

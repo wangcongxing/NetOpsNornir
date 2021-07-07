@@ -1,0 +1,24 @@
+Value Filldown Name (\S+)
+Value Unicast_sessions (\d+)
+Value Multicast_sessions (\d+)
+Value Failed_sessions (\d+)
+Value Sessions_in_use (\d+)
+Value Valid_sessions (\d+)
+Value Pending_sessions (\d+)
+Value Invalidated_sessions (\d+)
+Value Sessions_in_other_states (\d+)
+Value Maximum_sessions (\d+)
+
+Start
+  ^.*@${Name}>\s+show\s+security\s+flow\s+session\s+summary.*$$
+  ^Unicast-sessions:\s+${Unicast_sessions}$$
+  ^Multicast-sessions:\s+${Multicast_sessions}$$
+  ^Failed-sessions:\s+${Failed_sessions}$$
+  ^Sessions-in-use:\s+${Sessions_in_use}$$
+  ^\s+Valid\s+sessions:\s+${Valid_sessions}$$
+  ^\s+Pending\s+sessions:\s+${Pending_sessions}$$
+  ^\s+Invalidated\s+sessions:\s+${Invalidated_sessions}$$
+  ^\s+Sessions\s+in\s+other\s+states:\s+${Sessions_in_other_states}$$
+  ^Maximum-sessions:\s+${Maximum_sessions}$$ -> Record
+
+EOF

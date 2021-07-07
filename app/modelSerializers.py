@@ -24,7 +24,7 @@ class taskListSerializer(serializers.ModelSerializer):
             if "layuiTreeCheck" in item:
                 org_info.append(self.initial_data[item])
         print("org_info=", org_info)
-        cmdids = filter(None, str(self.initial_data["cmdids"]).split(","))
+        cmdids = list(filter(None, str(self.initial_data["cmdids"]).split(",")))
         if cmdids is [] or org_info is []:
             # 如何返回错误信息
             return False
@@ -42,6 +42,9 @@ class taskListSerializer(serializers.ModelSerializer):
                 print("item", item)
                 for tft in textfsmtemplates:
                     if tft.deviceType.id == int(item["deviceType"]):
+                        username = item["username"] if item["username"] else "admin"
+                        password = item["password"] if item["password"] else "password123456"
+
                         tasklistdetails.append(
                             models.taskListDetails(taskList=taskList,
                                                    ip=item["mip"] if item["mip"] == "" else item["ip"],
@@ -50,19 +53,18 @@ class taskListSerializer(serializers.ModelSerializer):
                                                    oldResult="",
                                                    jsonResult="",
                                                    textfsmtemplates=tft,
-                                                   username=item["username"],
-                                                   password=item["password"], port=item["port"], ))
+                                                   username=username,
+                                                   password=password, port=item["port"], ))
             if tasklistdetails:
                 models.taskListDetails.objects.bulk_create(tasklistdetails)
         return taskList
 
         # 验证code
 
-
-
     class Meta:
         model = models.taskList
-        fields = ["id", "nid", "taskName", "taskStatus", "taskStatusValue","callbackurl", "callbackcount", "desc", "creator", "editor",
+        fields = ["id", "nid", "taskName", "taskStatus", "taskStatusValue", "callbackurl", "callbackcount", "desc",
+                  "creator", "editor",
                   "lastTime", "createTime"]
         # depth = 1
 

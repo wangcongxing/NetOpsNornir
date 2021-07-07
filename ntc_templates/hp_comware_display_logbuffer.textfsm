@@ -1,0 +1,18 @@
+Value Filldown Name (\S+)
+Value Log_buffer (\w+)
+Value Max_buffer_size (\d+)
+Value Actual_buffer_size (\d+)
+Value Dropped_messages (\d+)
+Value Overwritten_messages (\d+)
+Value Current_messages (\d+)
+
+Start
+  ^<${Name}>display\s+logbuffer$$
+  ^Log\s+buffer:\s+${Log_buffer}$$
+  ^Max\s+buffer\s+size:\s+${Max_buffer_size}$$
+  ^Actual\s+buffer\s+size:\s+${Actual_buffer_size}$$
+  ^Dropped\s+messages:\s+${Dropped_messages}$$
+  ^Overwritten\s+messages:\s+${Overwritten_messages}$$
+  ^Current\s+messages:\s+${Current_messages}$$ -> Record
+
+EOF

@@ -1,0 +1,10 @@
+Value Filldown Name (\S+)
+Value TIME (\S+\s+[\w+\s+]+\S+)
+Value TIME_ZONE ([\S+\s+]+)
+
+Start
+  ^<${Name}>display\s+clock$$
+  ^${TIME}$$
+  ^Time\s+Zone\s+:\s+${TIME_ZONE}$$ -> Record
+
+EOF

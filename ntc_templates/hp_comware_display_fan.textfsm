@@ -1,0 +1,10 @@
+Value Filldown Name (\S+)
+Value Chassis_ID (\d)
+Value FAN_STATE (\w+)
+
+Start
+  ^<${Name}>display\s+fan$$
+  ^\s+Chassis\s+${Chassis_ID}:
+  ^\s+Fan\s+Frame\s+\d\s+State:\s+${FAN_STATE}$$ -> Record
+
+EOF

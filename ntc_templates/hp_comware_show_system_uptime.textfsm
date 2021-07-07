@@ -1,0 +1,14 @@
+Value Filldown Name (\S+)
+Value Current_time ([\S+\s+]+)
+Value System_booted ([\S+\s+]+)
+Value Protocols_started ([\S+\s+]+)
+Value Last_configured ([\S+\s+]+)
+
+Start
+  ^.*@${Name}>\s+show\s+system\s+uptime.*$$
+  ^Current\s+time:\s+${Current_time}$$
+  ^System\s+booted:\s+${System_booted}$$
+  ^Protocols\s+started:\s+${Protocols_started}$$
+  ^Last\s+configured:\s+${Last_configured}$$ -> Record
+
+EOF

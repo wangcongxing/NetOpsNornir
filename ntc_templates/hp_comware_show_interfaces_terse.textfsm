@@ -1,0 +1,18 @@
+Value Filldown Name (\S+)
+Value Interface (\S+)
+Value Admin (up|down)
+Value Link (up|down)
+Value Proto (\w+)
+Value Local (\S+)
+Value Remote (\S+)
+
+Start
+  ^.*@${Name}>\s+show\s+interfaces\s+terse.*$$
+  ^${Interface}\s+${Admin}\s+${Link}\s+${Proto}\s+${Local}\s+-->\s+${Remote}$$ -> Record
+  ^${Interface}\s+${Admin}\s+${Link}\s+${Proto}\s+${Local}\s+$$ -> Record
+  ^${Interface}\s+${Admin}\s+${Link}\s+${Proto}\s+$$ -> Record
+  ^${Interface}\s+${Admin}\s+${Link}$$ -> Record
+  ^\s+${Local}\s+-->\s+${Remote}$$ -> Record
+  ^\s+${Proto}\s+$$ -> Record
+
+EOF

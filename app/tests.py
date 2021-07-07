@@ -4,6 +4,16 @@ print(ast.literal_eval('[]'))
 
 # Create your tests here.
 
+
+from concurrent.futures import ThreadPoolExecutor
+
+
+# submit(fn, *args, **kwargs)
+# return Future object
+with ThreadPoolExecutor(max_workers=1) as executor:
+    future = executor.submit(pow, 323, 1235)
+    print(future.result())
+
 # -*- coding: utf-8 -*-
 __Author__ = "jenrey"
 __Date__ = '2020/05/21 16:46'

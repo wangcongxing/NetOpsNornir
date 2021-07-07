@@ -1,0 +1,13 @@
+Value Filldown Name (\S+)
+Value Interface (\S+)
+Value Physical (up|down|up\(s\)|down\(s\))
+Value Protocol (up|down|up\(s\)|down\(s\))
+Value IP_address (\S+)
+Value VPN_instance (\S+)
+Value Description (\S+)
+
+Start
+  ^<${Name}>display\s+ip\s+interface\s+brief$$
+  ^${Interface}\s+${Physical}\s+${Protocol}\s+${IP_address}\s+${VPN_instance}\s+${Description}$$ -> Record
+
+EOF

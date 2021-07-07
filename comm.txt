@@ -216,3 +216,8 @@ centos 启动事项
 
 在线工具私有化 docker 自己实现？
 http://textfsm.nornir.tech/
+
+
+
+场景运维
+

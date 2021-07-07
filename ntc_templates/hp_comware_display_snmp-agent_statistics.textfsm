@@ -1,0 +1,46 @@
+Value Filldown Name (\S+)
+Value Message_to_SNMP_entity (\d+)
+Value Message_for_unsupported_version (\d+)
+Value Message_use_unknown_SNMP_name (\d+)
+Value Message_represent_illegal_operation (\d+)
+Value ASN_or_BER_error (\d+)
+Value Message_from_SNMP_entity (\d+)
+Value SNMP_PDUs_badValue (\d+)
+Value SNMP_PDUs_genErr (\d+)
+Value SNMP_PDUs_noSuchName (\d+)
+Value SNMP_PDUs_tooBig (\d+)
+Value MIB_object_retrieved_successfully (\d+)
+Value MIB_object_altered_successfully (\d+)
+Value GetRequest_PDU (\d+)
+Value GetNextRequest_PDU (\d+)
+Value GetBulkRequest_PDU (\d+)
+Value GetResponse_PDU (\d+)
+Value SetRequest_PDU (\d+)
+Value Trap_PDUs (\d+)
+Value Alternate_Response_PDUs_dropped (\d+)
+Value Forwarded_Confirmed_PDUs_dropped (\d+)
+
+Start
+  ^<${Name}>display\s+snmp-agent\s+statistics$$
+  ^\s+${Message_to_SNMP_entity}\s+messages\s+delivered\s+to\s+the\s+SNMP\s+entity\.$$
+  ^\s+${Message_for_unsupported_version}\s+messages\s+were\s+for\s+an\s+unsupported\s+version\.$$
+  ^\s+${Message_use_unknown_SNMP_name}\s+messages\s+used\s+an\s+unknown\s+SNMP\s+community\s+name\.$$
+  ^\s+${Message_represent_illegal_operation}\s+messages\s+represented\s+an\s+illegal\s+operation\s+for\s+the\s+community\s+supplied\.$$
+  ^\s+${ASN_or_BER_error}\s+ASN\.\d\s+or\s+BER\s+errors\s+in\s+the\s+process\s+of\s+decoding\.$$
+  ^\s+${Message_from_SNMP_entity}\s+messages\s+passed\s+from\s+the\s+SNMP\s+entity\.$$
+  ^\s+${SNMP_PDUs_badValue}\s+SNMP\s+PDUs\s+had\s+badValue\s+error-status\.$$
+  ^\s+${SNMP_PDUs_genErr}\s+SNMP\s+PDUs\s+had\s+genErr\s+error-status\.$$
+  ^\s+${SNMP_PDUs_noSuchName}\s+SNMP\s+PDUs\s+had\s+noSuchName\s+error-status\.$$
+  ^\s+${SNMP_PDUs_tooBig}\s+SNMP\s+PDUs\s+had\s+tooBig\s+error-status\s+\(Maximum\s+packet\s+size\s+\d+\)\.$$
+  ^\s+${MIB_object_retrieved_successfully}\s+MIB\s+objects\s+retrieved\s+successfully\.$$
+  ^\s+${MIB_object_altered_successfully}\s+MIB\s+objects\s+altered\s+successfully\.$$
+  ^\s+${GetRequest_PDU}\s+GetRequest-PDU\s+accepted\s+and\s+processed\.$$
+  ^\s+${GetNextRequest_PDU}\s+GetNextRequest-PDU\s+accepted\s+and\s+processed\.$$
+  ^\s+${GetBulkRequest_PDU}\s+GetBulkRequest-PDU\s+accepted\s+and\s+processed\.$$
+  ^\s+${GetResponse_PDU}\s+GetResponse-PDU\s+accepted\s+and\s+processed\.$$
+  ^\s+${SetRequest_PDU}\s+SetRequest-PDU\s+accepted\s+and\s+processed\.$$
+  ^\s+${Trap_PDUs}\s+Trap\s+PDUs\s+accepted\s+and\s+processed\.$$
+  ^\s+${Alternate_Response_PDUs_dropped}\s+alternate\s+Response\s+Class\s+PDUs\s+dropped\s+silently\.$$
+  ^\s+${Forwarded_Confirmed_PDUs_dropped}\s+forwarded\s+Confirmed\s+Class\s+PDUs\s+dropped\s+silently\.$$ -> Record
+
+EOF

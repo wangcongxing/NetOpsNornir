@@ -1,0 +1,14 @@
+Value Filldown Name (\S+)
+Value Active_resource_manager_clients (\d+)
+Value Active_resource_manager_groups (\d+)
+Value Active_resource_manager_resources (\d+)
+Value Active_resource_manager_sessions (\d+)
+
+Start
+  ^.*@${Name}>\s+show\s+security\s+resource-manager\s+summary.*$$
+  ^Active\s+resource-manager\s+clients\s+:\s+${Active_resource_manager_clients}$$
+  ^Active\s+resource-manager\s+groups\s+:\s+${Active_resource_manager_groups}$$
+  ^Active\s+resource-manager\s+resources\s+:\s+${Active_resource_manager_resources}$$
+  ^Active\s+resource-manager\s+sessions\s+:\s+${Active_resource_manager_sessions}$$ -> Record
+
+EOF

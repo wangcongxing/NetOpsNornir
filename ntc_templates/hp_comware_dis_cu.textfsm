@@ -1,0 +1,27 @@
+Value Filldown Name (\S+)
+Value Ospf_1_router_ID (\S+)
+Value Bandwidth_reference (\d+)
+Value Area_ID (\S+)
+Value Interface (\S+)
+Value Link_mode (route|bridge)
+Value IP_address (\S+)
+Value Gateway_ID (\S+)
+Value Description ([\S+\s+]+)
+Value Link_type (trunk)
+Value Access ([\S+\s+]+)
+Value ipRouteStatic ([\S+\s+]+)
+
+Start
+  ^<${Name}>dis\s+cu$$
+  ^ospf\s+1\s+router-id\s+${Ospf_1_router_ID}$$
+  ^\s+bandwidth-reference\s+${Bandwidth_reference}$$
+  ^\s+area\s+${Area_ID}$$
+  ^\s+network\s+${IP_address}\s+${Gateway_ID}$$ -> Record
+  ^interface\s+${Interface}$$
+  ^\s+port\s+link-mode\s+${Link_mode}$$
+  ^\s+description\s+${Description}$$
+  ^\s+ip\s+address\s+${IP_address}\s+${Gateway_ID}$$
+  ^\s+port\s+access\s+${Access}$$ -> Record
+  ^\s+ip\s+route-static\s+${ipRouteStatic}$$ -> Record
+
+EOF

@@ -1,0 +1,40 @@
+Value Filldown Name (\S+)
+Value Temperature ([\S+\s+]+)
+Value CPU_temperature ([\S+\s+]+)
+Value Total_memory ([\S+\s+]+)
+Value Control_plane_memory ([\S+\s+]+)
+Value Data_plane_memory ([\S+\s+]+)
+Value CPU_utilization_User (\d+\s+percent)
+Value CPU_utilization_Background (\d+\s+percent)
+Value CPU_utilization_Kernel (\d+\s+percent)
+Value CPU_utilization_Interrupt (\d+\s+percent)
+Value CPU_utilization_Idle (\d+\s+percent)
+Value Model (\S+)
+Value Serial_ID (\w+)
+Value Start_time ([\S+\s+]+)
+Value Uptime ([\S+\s+]+)
+Value Last_reboot_reason ([\S+\s+]+)
+Value Load_averages_1_minute ([\d+\.]+)
+Value Load_averages_5_minute ([\d+\.]+)
+Value Load_averages_15_minute ([\d+\.]+)
+
+Start
+  ^.*@${Name}>\s+show\s+chassis\s+routing-engine.*$$
+  ^\s+Temperature\s+${Temperature}$$
+  ^\s+CPU\s+temperature\s+${CPU_temperature}$$
+  ^\s+Total\s+memory\s+${Total_memory}$$
+  ^\s+Control\s+plane\s+memory\s+${Control_plane_memory}$$
+  ^\s+Data\s+plane\s+memory\s+${Data_plane_memory}$$
+  ^\s+User\s+${CPU_utilization_User}$$
+  ^\s+Background\s+${CPU_utilization_Background}$$
+  ^\s+Kernel\s+${CPU_utilization_Kernel}$$
+  ^\s+Interrupt\s+${CPU_utilization_Interrupt}$$
+  ^\s+Idle\s+${CPU_utilization_Idle}$$
+  ^\s+Model\s+${Model}$$
+  ^\s+Serial\s+ID\s+${Serial_ID}$$
+  ^\s+Start\s+time\s+${Start_time}$$
+  ^\s+Uptime\s+${Uptime}$$
+  ^\s+Last\s+reboot\s+reason\s+${Last_reboot_reason}$$
+  ^\s+${Load_averages_1_minute}\s+${Load_averages_5_minute}\s+${Load_averages_15_minute}$$ -> Record
+
+EOF

@@ -1,0 +1,13 @@
+Value Filldown Name (\S+)
+Value Item (Routing\sEngine|Routing\sEngine\sCPU|SRXSME\sChassis\sFan\s\d|Power\sSupply\s\d)
+Value Status (OK|Absent)
+Value Measurement ([\S+\s+]+)
+
+Start
+  ^.*@${Name}>\s+show\s+chassis\s+environment.*$$
+  ^\w+\s+${Item}\s+${Status}\s+${Measurement}$$ -> Record
+  ^\s+${Item}\s+${Status}\s+${Measurement}$$ -> Record
+  ^\w+\s+${Item}\s+${Status}\s+$$ -> Record
+  ^\s+${Item}\s+${Status}\s+$$ -> Record
+
+EOF

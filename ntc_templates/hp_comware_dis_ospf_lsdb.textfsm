@@ -1,0 +1,19 @@
+Value Filldown Name (\S+)
+Value Filldown Process_ID (\d)
+Value Filldown Router_ID (\S+)
+Value Filldown Area_ID (\S+)
+Value Type_name (Router|Network|Sum-Net|External)
+Value LinkState_ID (\S+)
+Value AdvRouter_ID (\S+)
+Value Age (\d+)
+Value Len (\S+)
+Value Sequence (\w+)
+Value Metric (\d+)
+
+Start
+  ^<${Name}>dis\s+ospf\s+lsdb$$
+  ^\s+OSPF\s+Process\s+${Process_ID}\s+with\s+Router\s+ID\s+${Router_ID}$$
+  ^\s+Area:\s+${Area_ID}$$
+  ^\s+${Type_name}\s+${LinkState_ID}\s+${AdvRouter_ID}\s+${Age}\s+${Len}\s+${Sequence}\s+${Metric}\s+$$ -> Record
+
+EOF

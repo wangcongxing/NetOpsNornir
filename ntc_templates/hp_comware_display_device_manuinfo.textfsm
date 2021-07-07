@@ -1,0 +1,28 @@
+Value Filldown Name (\S+)
+Value Filldown Chassis_ID (\d)
+Value SLOT_ID (\d)
+Value CPU_ID (\d)
+Value POWER_ID (\d)
+Value DEVICE_NAME (\w+)
+Value DEVICE_SERIAL_NUMBER (\w+)
+Value MAC_ADDRESS (\S+)
+Value MANUFACTURING_DATE (\S+)
+Value VENDOR_NAME (\w+)
+
+Start
+  ^<${Name}>display\s+device\s+manuinfo$$
+  ^Chassis\s+${Chassis_ID}:$$
+  ^\s+Slot\s+${SLOT_ID}\s+CPU\s+${CPU_ID}:$$
+  ^\s+DEVICE_NAME\s+:\s+${DEVICE_NAME}$$
+  ^\s+DEVICE_SERIAL_NUMBER\s+:\s+${DEVICE_SERIAL_NUMBER}$$
+  ^\s+MAC_ADDRESS\s+:\s+${MAC_ADDRESS}$$
+  ^\s+MANUFACTURING_DATE\s+:\s+${MANUFACTURING_DATE}$$
+  ^\s+VENDOR_NAME\s+:\s+${VENDOR_NAME}$$ -> Record
+  ^Power\s+${POWER_ID}:$$
+  ^\s+DEVICE_NAME\s+:\s+${DEVICE_NAME}$$
+  ^\s+DEVICE_SERIAL_NUMBER\s+:\s+${DEVICE_SERIAL_NUMBER}$$
+  ^\s+MAC_ADDRESS\s+:\s+${MAC_ADDRESS}$$
+  ^\s+MANUFACTURING_DATE\s+:\s+${MANUFACTURING_DATE}$$
+  ^\s+VENDOR_NAME\s+:\s+${VENDOR_NAME}$$ -> Record
+
+EOF

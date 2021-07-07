@@ -1,0 +1,14 @@
+Value Filldown Name (\S+)
+Value MAC_Address ([\w+:]+)
+Value IP_Address ([\d+\.]+)
+Value IP_Name ([\d+\.]+)
+Value Interface (\S+)
+Value Flags (\S+)
+Value Total_entries (\d+)
+
+Start
+  ^.*@${Name}>\s+show\s+arp.*$$
+  ^${MAC_Address}\s+${IP_Address}\s+${IP_Name}\s+${Interface}\s+${Flags}$$ -> Record
+  ^Total\s+entries:\s+${Total_entries}$$ -> Record
+
+EOF

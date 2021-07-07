@@ -18,11 +18,12 @@ class taskListFilter(filters.FilterSet):
 class deviceTypesFilter(filters.FilterSet):
     # 模糊过滤
     id = django_filters.CharFilter(field_name="id", )
+    deviceState = django_filters.CharFilter(field_name="deviceState", )
     deviceValue = django_filters.CharFilter(field_name="deviceValue", lookup_expr='icontains')
 
     class Meta:
         model = models.deviceTypes
-        fields = ['id', 'deviceValue', ]
+        fields = ['id', 'deviceValue', 'deviceState']
 
 
 class textFsmTemplatesFilter(filters.FilterSet):

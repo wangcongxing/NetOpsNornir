@@ -1,0 +1,68 @@
+Value Required LOCAL_INTERFACE (\S+)
+Value NEIGHBOR_INDEX (\d+)
+Value UPDATE_TIME ([\S+\s+]+)
+Value CHASSIS_TYPE ([\S+\s+]+)
+Value CHASSIS_ID (\S+)
+Value NEIGHBOR_PORT_ID_TYPE ([\S+\s+]+)
+Value NEIGHBOR_PORT_ID (\S+)
+Value TTL (\d+)
+Value NEIGHBOR_PORT_DES ([\S+\s+]+)
+Value SYS_NAME (\S+)
+Value VERSION (\S+)
+Value SYS_SUP ([\S+\s+]+)
+Value SYS_EN ([\S+\s+]+)
+Value ADDR_TYPE (\w+)
+Value ADDR (\S+)
+Value ADDR_INTERFACE_TYPE (\w+)
+Value ADDR_INTERFACE_ID (\d+)
+Value ADDR_OID (\d+)
+Value LINK_AGGREGATION_SUP (\w+)
+Value LINK_AGGREGATION_EN (\w+)
+Value AGGREGATION_PORT_ID (\d+)
+Value AUTO_NEGOTIATION_SUP (\w+)
+Value AUTO_NEGOTIATION_EN (\w+)
+Value OPERMAU (\S+)
+Value POWER_PORT_CLASS (\w+)
+Value PSE_POWER_SUP (\w+)
+Value PSE_POWER_EN (\w+)
+Value PSE_PAIRS_CONTROL_ABILITY (\w+)
+Value POWER_PAIRS (\w+)
+Value PORT_POWER_CLASSIFICATION ([\S+\s+]+)
+Value MAX_FRAME_SIZE (\d+)
+
+Start
+  ^LLDP\s+neighbor-information\s+of\s+port\s+\d+\[${LOCAL_INTERFACE}\]:$$
+  ^LLDP\s+agent\s+nearest-bridge:
+  ^\s+LLDP\s+neighbor\s+index\s+:\s*${NEIGHBOR_INDEX}\s*$$
+  ^\s+Update\s+time\s+:\s*${UPDATE_TIME}$$
+  ^\s+Chassis\s+type\s+:\s*${CHASSIS_TYPE}$$
+  ^\s+Chassis\s+ID\s+:\s*${CHASSIS_ID}$$
+  ^\s+Port\s+ID\s+type\s+:\s*${NEIGHBOR_PORT_ID_TYPE}$$
+  ^\s+Port\s+ID\s+:\s*${NEIGHBOR_PORT_ID}$$
+  ^\s+Time\s+to\s+live\s+:\s*${TTL}$$
+  ^\s+Port\s+description\s+:\s*${NEIGHBOR_PORT_DES}$$
+  ^\s+System\s+name\s+:\s*${SYS_NAME}$$
+  ^\s+System\s+description\s+:
+  ^.*Software,\s+Software\s+Version\s+${VERSION},\s+
+  ^\s+System\s+capabilities\s+supported\s+:\s*${SYS_SUP}$$
+  ^\s+System\s+capabilities\s+enabled\s+:\s*${SYS_EN}$$
+  ^\s+Management\s+address\s+type\s+:\s*${ADDR_TYPE}$$
+  ^\s+Management\s+address\s+:\s*${ADDR}$$
+  ^\s+Management\s+address\s+interface\s+type\s+:\s*${ADDR_INTERFACE_TYPE}$$
+  ^\s+Management\s+address\s+interface\s+ID\s+:\s*${ADDR_INTERFACE_ID}$$
+  ^\s+Management\s+address\s+OID\s+:\s*${ADDR_OID}$$
+  ^\s+Link\s+aggregation\s+supported\s+:\s*${LINK_AGGREGATION_SUP}$$
+  ^\s+Link\s+aggregation\s+enabled\s+:\s*${LINK_AGGREGATION_EN}$$
+  ^\s+Aggregation\s+port\s+ID\s+:\s*${AGGREGATION_PORT_ID}$$
+  ^\s+Auto-negotiation\s+supported\s+:\s*${AUTO_NEGOTIATION_SUP}$$
+  ^\s+Auto-negotiation\s+enabled\s+:\s*${AUTO_NEGOTIATION_EN}$$
+  ^\s+OperMau\s+:\s*${OPERMAU}$$
+  ^\s+Power\s+port\s+class\s+:\s*${POWER_PORT_CLASS}$$
+  ^\s+PSE\s+power\s+supported\s+:\s*${PSE_POWER_SUP}$$
+  ^\s+PSE\s+power\s+enabled\s+:\s*${PSE_POWER_EN}$$
+  ^\s+PSE\s+pairs\s+control\s+ability\s+:\s*${PSE_PAIRS_CONTROL_ABILITY}$$
+  ^\s+Power\s+pairs\s+:\s*${POWER_PAIRS}$$
+  ^\s+Port\s+power\s+classification\s+:\s*${PORT_POWER_CLASSIFICATION}$$
+  ^\s+Maximum\s+frame\s+size\s+:\s*${MAX_FRAME_SIZE}$$ -> Record
+
+EOF
