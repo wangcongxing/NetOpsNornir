@@ -35,3 +35,15 @@ class textFsmTemplatesFilter(filters.FilterSet):
     class Meta:
         model = models.textFsmTemplates
         fields = ["deviceType", 'cmds', "desc"]
+
+
+class netmaintainFilter(filters.FilterSet):
+    # 模糊过滤
+    deviceType = django_filters.CharFilter(field_name="deviceType", )
+    name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
+    username = django_filters.CharFilter(field_name="username", lookup_expr='icontains')
+    desc = django_filters.CharFilter(field_name="desc", lookup_expr='icontains')
+
+    class Meta:
+        model = models.netmaintain
+        fields = ["deviceType", 'name', "username", "desc"]

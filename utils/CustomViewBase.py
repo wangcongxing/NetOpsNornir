@@ -102,3 +102,5 @@ class CustomViewBase(viewsets.ModelViewSet):
         list_ids = [int(x) for x in list_ids if x.split()]
         self.queryset.model.objects.filter(id__in=list_ids).delete()
         return APIResponseResult.APIResponse(0, "删除成功", results=list_ids)
+
+

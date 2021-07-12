@@ -12,6 +12,10 @@ router.register(r'textFsmTemplatesExport', modeExport.textFsmTemplatesExport)  #
 
 router.register(r'taskList', views.taskListViewSet)  # 任务管理
 router.register(r'taskListDetails', views.taskListDetailsViewSet)  # 任务详情
+router.register(r'netmaintain', views.netmaintainViewSet)  # 日常维护
+
+
+
 
 urlpatterns = [
     # 默认数据初始化

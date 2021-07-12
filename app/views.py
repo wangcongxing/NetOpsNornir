@@ -44,6 +44,11 @@ import django_excel as excel
 import xlwt
 from django.http import HttpResponse
 from netmiko import ConnectHandler
+from django.db.models import Q
+from time import strftime, localtime
+from netmiko import SSHDetect, Netmiko
+from getpass import getpass
+import ast
 
 ENV_PROFILE = os.getenv("ENV")
 if ENV_PROFILE == "pro":
@@ -93,7 +98,7 @@ class opsBaseInitDB(APIView):
         jsonResult = getDeviceType()
         for item in jsonResult:
             d, c = models.deviceTypes.objects.update_or_create(
-                defaults={"deviceKey": item[0], "deviceValue": item[0], "deviceState": 0,
+                defaults={"deviceKey": item[0], "deviceValue": item[0],
                           'creator': superUser, 'editor': superUser},
                 deviceKey=item[0])
         # 从venv ntc_templates复制模版文件到 项目目录 ntc_templates
@@ -476,3 +481,84 @@ class textFsmTemplatesViewSet(CustomViewBase):
     filter_class = modelFilters.textFsmTemplatesFilter
     ordering_fields = ('id',)  # 排序
     permission_classes = [modelPermission.textFsmTemplatesPermission]
+
+
+# 日常维护写入配置操作
+def sendCommand(nid):
+    try:
+        item = models.netmaintainIpList.objects.get(id=int(nid))
+        netTask = item.netmaintain
+        dev_info = {
+            "device_type": netTask.deviceType.deviceKey,
+            "ip": item.ip,
+            "username": netTask.username,
+            "password": netTask.password,
+            "conn_timeout": 20,
+            "port": netTask.port,
+        }
+        cmds = netTask.cmds
+        nid = item.id
+        netmaintainiplistkwargs = models.netmaintainIpListKwargs.objects.filter(netmaintainIpList=item)
+        for cmdInfo in netmaintainiplistkwargs:
+            cmds = str(cmds).replace(cmdInfo.key, cmdInfo.value)
+        cmds = str(cmds).replace("\n", ",").replace(";", ",").split(",")  # 根据回撤逗号分割
+        print("cmds=", cmds)
+        resultText = []
+        with ConnectHandler(**dev_info) as conn:
+            print("已经成功登陆交换机" + dev_info['ip'])
+            print("nid=", nid)
+            for cmd in cmds:
+                result = conn.send_command_timing(str(cmd).strip())
+                resultText.append(
+                    {"time": strftime('%Y-%m-%d %H:%M:%S', localtime()),
+                     "cmd": "<{}>{}".format(conn.base_prompt, cmd),
+                     "result": "<{}>{}".format(conn.base_prompt, result)})
+            conn.disconnect()
+
+            item.exceptionInfo = ""
+            item.resultText = ast.literal_eval(item.resultText) + resultText
+            item.taskStatus = 1
+
+    except Exception as e:
+        item.taskStatus = -1
+        item.exceptionInfo = e.args
+    finally:
+        item.save()
+
+
+class netmaintainViewSet(CustomViewBase):
+    queryset = models.netmaintain.objects.all().order_by('-id')
+    serializer_class = modelSerializers.netmaintainSerializer
+    filter_class = modelFilters.netmaintainFilter
+    ordering_fields = ('id',)  # 排序
+    permission_classes = [modelPermission.netmaintainTemplatesPermission]
+
+    # 修改状态
+    @action(methods=['put'], detail=False, url_path='resetEnabled')
+    def resetEnabled(self, request, *args, **kwargs):
+        nid = request.data.get('nid', None)
+        if nid is None:
+            return APIResponseResult.APIResponse(-1, '请求发生错误,请稍后再试!')
+        netTask = models.netmaintain.objects.filter(id=nid).first()
+        if netTask is None:
+            return APIResponseResult.APIResponse(-2, '请求数据不存在,请稍后再试!')
+        netTask.enabled = False if netTask.enabled else True
+        netTask.save()
+        return APIResponseResult.APIResponse(0, "已启用" if netTask.enabled else "已禁用")
+
+    # 日常维护
+    @action(methods=['get'], detail=False, url_path='run')
+    def run(self, request, *args, **kwargs):
+        netmaintainIpLists = models.netmaintainIpList.objects.filter(Q(taskStatus=0),
+                                                                     netmaintain__startTime__lte=strftime(
+                                                                         '%Y-%m-%d %H:%M:%S', localtime()),
+                                                                     netmaintain__enabled=True).order_by(
+            '-lastTime', )
+        runInfo = []
+        runInfo.append({"start": strftime('%Y-%m-%d %H:%M:%S', localtime())})
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            for item in netmaintainIpLists:
+                infos = {item.id}
+                executor.map(sendCommand, infos)
+        runInfo.append({"end": strftime('%Y-%m-%d %H:%M:%S', localtime())})
+        return APIResponseResult.APIResponse(0, "success", runInfo)

@@ -1,7 +1,8 @@
 from rest_framework import viewsets, serializers, status
-import requests, os
+import requests, os, json
 from app import models
 from django.db import transaction
+import ast
 
 ENV_PROFILE = os.getenv("ENV")
 if ENV_PROFILE == "pro":
@@ -107,4 +108,52 @@ class textFsmTemplatesSerializerExport(serializers.ModelSerializer):
         model = models.textFsmTemplates
         fields = ["id", "deviceValue", "name", "cmds", "TextFSMTemplate", "desc", "createTime", "lastTime", "creator",
                   "editor", ]
+        depth = 1
+
+
+# 日常维护
+class netmaintainSerializer(serializers.ModelSerializer):
+    # 当前任务所有IP
+    netmaintainIpListShow = serializers.SerializerMethodField()
+
+    def get_netmaintainIpListShow(self, obj):
+        return models.netmaintainIpList.objects.filter(netmaintain=obj).values()
+
+    def create(self, validated_data):
+        validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
+
+        netmaintain = super().create(validated_data)
+
+        dataTableKwargsData = self.initial_data.get("dataTableKwargsData", "[]")
+
+        netTaskList = {}
+        for item in json.loads(dataTableKwargsData):
+            if item["ip"] in netTaskList.keys():
+                cmds = netTaskList[item["ip"]]
+                netTaskList[item["ip"]] = cmds + [{"key": item["key"], "value": item["value"]}]
+            else:
+                cmds = []
+                cmds.append({"key": item["key"], "value": item["value"]})
+                netTaskList.update({item["ip"]: cmds})
+
+        for key, items in netTaskList.items():
+            netmaintainiplist = models.netmaintainIpList.objects.create(netmaintain=netmaintain,
+                                                                        ip=key,
+                                                                        creator=netmaintain.creator,
+                                                                        editor=netmaintain.editor)
+            for cmdKwargs in items:
+                models.netmaintainIpListKwargs.objects.create(netmaintainIpList_id=netmaintainiplist.id,
+                                                              key=cmdKwargs["key"],
+                                                              value=cmdKwargs["value"],
+                                                              creator=netmaintain.creator,
+                                                              editor=netmaintain.editor)
+
+        return netmaintain
+
+    class Meta:
+        model = models.netmaintain
+        fields = ["id", "name", "deviceType", "username", "password", "port", "phone", "email", "startTime", "cmds",
+                  "desc",
+                  "enabled", "netmaintainIpListShow",
+                  "createTime", "lastTime", "creator", "editor"]
         depth = 1

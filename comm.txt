@@ -221,3 +221,15 @@ http://textfsm.nornir.tech/
 
 场景运维
 
+
+
+
+sys
+vlan {{vlanNum}}
+description  {{description}}
+quit
+quit
+save
+y
+
+y

@@ -1,12 +1,23 @@
 from django.test import TestCase
 import ast
+
 print(ast.literal_eval('[]'))
 
 # Create your tests here.
 
+a = [{'time': '2021-07-12 10:15:09', 'cmd': 'sys', 'result': 'System View: return to User View with Ctrl+Z.'},
+     {'time': '2021-07-12 10:15:15', 'cmd': 'vlan 11', 'result': ''},
+     {'time': '2021-07-12 10:15:27', 'cmd': 'description  10.10.10.10 32', 'result': ''},
+     {'time': '2021-07-12 10:15:32', 'cmd': 'quit', 'result': ''},
+     {'time': '2021-07-12 10:15:36', 'cmd': 'quit', 'result': ''}, {'time': '2021-07-12 10:15:41', 'cmd': 'save',
+                                                                    'result': 'The current configuration will be written to the device. Are you sure? [Y/N]:'},
+     {'time': '2021-07-12 10:15:45', 'cmd': 'y',
+      'result': 'Please input the file name(*.cfg)[flash:/startup.cfg]\n(To leave the existing filename unchanged, press the enter key):'},
+     {'time': '2021-07-12 10:15:50', 'cmd': '', 'result': 'flash:/startup.cfg exists, overwrite? [Y/N]:'},
+     {'time': '2021-07-12 10:15:57', 'cmd': 'y',
+      'result': 'Validating file. Please wait...\nConfiguration is saved to device successfully.'}]
 
 from concurrent.futures import ThreadPoolExecutor
-
 
 # submit(fn, *args, **kwargs)
 # return Future object
@@ -24,8 +35,14 @@ DOC_URL: http://python-gitlab.readthedocs.io/en/stable/
 LOCAL_PATH: C:\Python36\Lib\site-packages\gitlab
 """
 
-a = [['GigabitEthernet0/0', '5cdd-70e7-e851', 'GigabitEthernet0/0', 'GigabitEthernet0/0 Interface', 'SZ-ZHIHANF-CT', '10.32.2.2', ''], ['GigabitEthernet0/1', '600b-031c-1aa1', 'GigabitEthernet0/0', 'GigabitEthernet0/0 Interface', 'SZ-ZhiHang-CMCC', '10.32.2.6', '']]
-b = [['GigabitEthernet0/49', '5cdd-70e7-e851', 'GigabitEthernet0/3', 'GigabitEthernet0/3 Interface', 'SZ-ZHIHANF-CT', '10.32.4.252', '1'], ['GigabitEthernet0/50', '600b-031c-1aa1', 'GigabitEthernet0/3', 'GigabitEthernet0/3 Interface', 'SZ-ZhiHang-CMCC', '10.32.4.253', '1']]
+a = [['GigabitEthernet0/0', '5cdd-70e7-e851', 'GigabitEthernet0/0', 'GigabitEthernet0/0 Interface', 'SZ-ZHIHANF-CT',
+      '10.32.2.2', ''],
+     ['GigabitEthernet0/1', '600b-031c-1aa1', 'GigabitEthernet0/0', 'GigabitEthernet0/0 Interface', 'SZ-ZhiHang-CMCC',
+      '10.32.2.6', '']]
+b = [['GigabitEthernet0/49', '5cdd-70e7-e851', 'GigabitEthernet0/3', 'GigabitEthernet0/3 Interface', 'SZ-ZHIHANF-CT',
+      '10.32.4.252', '1'],
+     ['GigabitEthernet0/50', '600b-031c-1aa1', 'GigabitEthernet0/3', 'GigabitEthernet0/3 Interface', 'SZ-ZhiHang-CMCC',
+      '10.32.4.253', '1']]
 
 '''
         # Excel 写入行
@@ -123,7 +140,7 @@ b = [['GigabitEthernet0/49', '5cdd-70e7-e851', 'GigabitEthernet0/3', 'GigabitEth
 
 '''
 
-print(a+b)
+print(a + b)
 
 import gitlab
 
@@ -203,7 +220,7 @@ def commitFile(filePath, gitlabPath):
         else:
             aMap["action"] = "create"
         aMap["file_path"] = gitlab_dir
-        aMap["content"] = 'blah'#open(file_dir, 'r', encoding='ISO-8859-1').read()
+        aMap["content"] = 'blah'  # open(file_dir, 'r', encoding='ISO-8859-1').read()
         jsonList.append(aMap)
     jMap["actions"] = jsonList
     projects.commits.create(jMap)
@@ -211,7 +228,7 @@ def commitFile(filePath, gitlabPath):
 
 filePath = "/Users/congxingwang/pythoncode/NetOpsNornir/inventory"
 gitlabPath = "/NetOpsNornir/inventory"
-commitFile(filePath,gitlabPath)
+commitFile(filePath, gitlabPath)
 '''
 data = {
     'branch_name': 'master',  # v3
