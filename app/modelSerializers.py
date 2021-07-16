@@ -3,6 +3,7 @@ import requests, os, json
 from app import models
 from django.db import transaction
 import ast
+from utils import rsaEncrypt
 
 ENV_PROFILE = os.getenv("ENV")
 if ENV_PROFILE == "pro":
@@ -16,7 +17,8 @@ NetOpsAssetsUrl = config.initConfig["NetOpsAssetsUrl"]
 
 
 class taskListSerializer(serializers.ModelSerializer):
-
+    createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     def create(self, validated_data):
         print("validated_data=", validated_data)
         org_info = []
@@ -71,6 +73,8 @@ class taskListSerializer(serializers.ModelSerializer):
 
 
 class taskListDetailsSerializer(serializers.ModelSerializer):
+    createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     class Meta:
         model = models.taskListDetails
         fields = ["id", "taskList", "ip", "device_type", "device_type", "username", "password", "prot", "createTime",
@@ -79,6 +83,8 @@ class taskListDetailsSerializer(serializers.ModelSerializer):
 
 
 class deviceTypesSerializer(serializers.ModelSerializer):
+    createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     class Meta:
         model = models.deviceTypes
         fields = ["id", "deviceKey", "deviceValue", "deviceState", "createTime", "lastTime", "creator", "editor"]
@@ -86,7 +92,8 @@ class deviceTypesSerializer(serializers.ModelSerializer):
 
 
 class textFsmTemplatesSerializer(serializers.ModelSerializer):
-
+    createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     def create(self, validated_data):
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
 
@@ -104,6 +111,8 @@ class textFsmTemplatesSerializer(serializers.ModelSerializer):
 
 
 class textFsmTemplatesSerializerExport(serializers.ModelSerializer):
+    createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     class Meta:
         model = models.textFsmTemplates
         fields = ["id", "deviceValue", "name", "cmds", "TextFSMTemplate", "desc", "createTime", "lastTime", "creator",
@@ -113,6 +122,8 @@ class textFsmTemplatesSerializerExport(serializers.ModelSerializer):
 
 # 日常维护
 class netmaintainSerializer(serializers.ModelSerializer):
+    createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     # 当前任务所有IP
     netmaintainIpListShow = serializers.SerializerMethodField()
 
@@ -120,6 +131,9 @@ class netmaintainSerializer(serializers.ModelSerializer):
         return models.netmaintainIpList.objects.filter(netmaintain=obj).values()
 
     def create(self, validated_data):
+        password = validated_data["password"]
+        rsaUtil = RsaUtil()
+        validated_data.update({"password": str(rsaUtil.encrypt_by_public_key(password))})
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
 
         netmaintain = super().create(validated_data)
@@ -152,8 +166,30 @@ class netmaintainSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.netmaintain
-        fields = ["id", "name", "deviceType", "username", "password", "port", "phone", "email", "startTime", "cmds",
+        fields = ["id", "name", "deviceType","deviceValue","username", "password", "port", "phone", "email", "startTime", "cmds",
                   "desc",
                   "enabled", "netmaintainIpListShow",
                   "createTime", "lastTime", "creator", "editor"]
+        depth = 1
+
+
+class nettempSerializer(serializers.ModelSerializer):
+    createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+
+
+    def create(self, validated_data):
+        validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
+
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
+        return super().update(instance, validated_data)
+
+    class Meta:
+        model = models.nettemp
+        fields = ["id", "title", "deviceType","deviceValue", "deviceTypeId", "cmds", "desc", "useCount", "createTime", "lastTime", "creator",
+                  "editor"]
+
         depth = 1

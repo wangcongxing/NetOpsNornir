@@ -47,3 +47,14 @@ class netmaintainFilter(filters.FilterSet):
     class Meta:
         model = models.netmaintain
         fields = ["deviceType", 'name', "username", "desc"]
+
+
+class nettempFilter(filters.FilterSet):
+    # 模糊过滤
+    deviceType = django_filters.CharFilter(field_name="deviceType", )
+    title = django_filters.CharFilter(field_name="title", lookup_expr='icontains')
+    desc = django_filters.CharFilter(field_name="desc", lookup_expr='icontains')
+
+    class Meta:
+        model = models.nettemp
+        fields = ["deviceType", 'title', "desc", ]

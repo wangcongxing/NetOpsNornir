@@ -4,6 +4,7 @@ from nornir_netmiko import netmiko_send_command
 import pandas
 
 # 加载config，创建一个nornir对象
+#- display device manuinfo | in NUMBER
 nr = InitNornir(config_file="config.yaml")
 
 outputs = []
@@ -19,7 +20,8 @@ def show_cmds(task):
         # Task类调用run方法，执行任务，如netmiko_send_command、write_file等插件
         result = task.run(netmiko_send_command, command_string=cmd)
         output = result.result
-        sn_number = (f'{output}'.replace(' ', '@')).split('@')[-1]
+        #sn_number = (f'{output}'.replace(' ', '@')).split('@')[-1]
+        sn_number = list(filter(None,output.split(' ')))[-2]
         hostname = f'{task.host.hostname}'
         print(hostname + ' ' + 'SN ' + sn_number)
         outputs.append(output)
@@ -32,8 +34,8 @@ def show_cmds(task):
 results = nr.run(task=show_cmds)
 print(results)
 print_result(results)
-columns = ['hostname', 'SN号']
+columns = ['hostname', 'Loop']
 tables = pandas.DataFrame(sn_tables, columns=columns)
-namestr = 'host_sn.xlsx'
+namestr = 'host_Loop.xlsx'
 tables.to_excel(namestr, index=0)
 print('{name} created!'.format(name=namestr))

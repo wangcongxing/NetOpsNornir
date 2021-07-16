@@ -49,6 +49,9 @@ from time import strftime, localtime
 from netmiko import SSHDetect, Netmiko
 from getpass import getpass
 import ast
+from utils import rsaEncrypt
+
+rsaUtil = rsaEncrypt.RsaUtil()
 
 ENV_PROFILE = os.getenv("ENV")
 if ENV_PROFILE == "pro":
@@ -488,11 +491,12 @@ def sendCommand(nid):
     try:
         item = models.netmaintainIpList.objects.get(id=int(nid))
         netTask = item.netmaintain
+        password =rsaUtil.decrypt_by_private_key(netTask.password)
         dev_info = {
             "device_type": netTask.deviceType.deviceKey,
             "ip": item.ip,
             "username": netTask.username,
-            "password": netTask.password,
+            "password": password,
             "conn_timeout": 20,
             "port": netTask.port,
         }
@@ -504,6 +508,7 @@ def sendCommand(nid):
         cmds = str(cmds).replace("\n", ",").replace(";", ",").split(",")  # 根据回撤逗号分割
         print("cmds=", cmds)
         resultText = []
+        cmdInfo = []
         with ConnectHandler(**dev_info) as conn:
             print("已经成功登陆交换机" + dev_info['ip'])
             print("nid=", nid)
@@ -513,9 +518,12 @@ def sendCommand(nid):
                     {"time": strftime('%Y-%m-%d %H:%M:%S', localtime()),
                      "cmd": "<{}>{}".format(conn.base_prompt, cmd),
                      "result": "<{}>{}".format(conn.base_prompt, result)})
+                cmdInfo.append(
+                    "<{}>{}".format(conn.base_prompt, cmd) + "\n" + "<{}>{}".format(conn.base_prompt, result))
             conn.disconnect()
 
             item.exceptionInfo = ""
+            item.cmdInfo = "\n".join(cmdInfo)
             item.resultText = ast.literal_eval(item.resultText) + resultText
             item.taskStatus = 1
 
@@ -555,6 +563,7 @@ class netmaintainViewSet(CustomViewBase):
                                                                      netmaintain__enabled=True).order_by(
             '-lastTime', )
         runInfo = []
+        cmdInfo = []
         runInfo.append({"start": strftime('%Y-%m-%d %H:%M:%S', localtime())})
         with ThreadPoolExecutor(max_workers=20) as executor:
             for item in netmaintainIpLists:
@@ -562,3 +571,27 @@ class netmaintainViewSet(CustomViewBase):
                 executor.map(sendCommand, infos)
         runInfo.append({"end": strftime('%Y-%m-%d %H:%M:%S', localtime())})
         return APIResponseResult.APIResponse(0, "success", runInfo)
+
+    # 下载
+    @action(methods=['get'], detail=False, url_path='download')
+    def download(self, request, *args, **kwargs):
+        nid = request.GET.get("nid", 0)
+        if nid == 0:
+            return APIResponseResult.APIResponse(-1, "参数有无请稍后再试!!!")
+        result = models.netmaintainIpList.objects.filter(netmaintain__id=nid, ).values("netmaintain__name", "ip",
+                                                                                       "cmdInfo",
+                                                                                       "resultText",
+                                                                                       "taskStatus", "exceptionInfo",
+                                                                                       "createTime", "lastTime",
+                                                                                       "creator",
+                                                                                       "editor")
+        return APIResponseResult.APIResponse(0, "ok", result)
+
+
+# 运维场景
+class nettempViewSet(CustomViewBase):
+    queryset = models.nettemp.objects.all().order_by('-useCount', '-id', )
+    serializer_class = modelSerializers.nettempSerializer
+    filter_class = modelFilters.nettempFilter
+    ordering_fields = ['useCount', '-id', ]  # 排序
+    permission_classes = [modelPermission.nettempPermission]

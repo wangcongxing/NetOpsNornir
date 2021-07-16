@@ -13,7 +13,7 @@ h3c_sw1:
 
     data:
         cmds:
-            - display device manuinfo | in NUMBER
+            - display ip interface brief | in Loop
 
 h3c_sw2:
     hostname: 10.32.1.2
@@ -27,7 +27,7 @@ h3c_sw2:
 
     data:
         cmds:
-            - display device manuinfo | in NUMBER
+            - display ip interface brief | in Loop
 
 h3c_sw3:
     hostname: 10.32.1.3
@@ -41,7 +41,7 @@ h3c_sw3:
 
     data:
         cmds:
-            - display device manuinfo | in NUMBER
+            - display ip interface brief | in Loop
 
 h3c_sw4:
     hostname: 10.32.4.1
@@ -55,4 +55,4 @@ h3c_sw4:
 
     data:
         cmds:
-            - display device manuinfo | in NUMBER
+            - display ip interface brief | in Loop

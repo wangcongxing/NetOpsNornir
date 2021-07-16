@@ -1,10 +1,29 @@
 from django.db import models
-import uuid
+import uuid, os
+
+ENV_PROFILE = os.getenv("ENV")
+if ENV_PROFILE == "pro":
+    from NetOpsNornir import pro_settings as config
+elif ENV_PROFILE == "test":
+    from NetOpsNornir import test_settings as config
+else:
+    from NetOpsNornir import settings as config
 
 
 # Create your models here.
 def newguid():
     return str(uuid.uuid4())
+
+
+def newImageName(instance, filename):
+    # 日期目录和 随机文件名
+    ext = str(filename.split('.')[-1]).upper()
+    exts = ['PNG', 'JPG', 'GIF',]
+    if ext not in exts:
+        ext = "PNG"
+
+    filename = os.path.join(config.MEDIA_ROOT, 'student/{}.{}'.format(uuid.uuid4().hex, ext))
+    return filename
 
 
 task_status_choices = (
@@ -23,6 +42,8 @@ device_state_choices = (
 class deviceTypes(models.Model):
     deviceKey = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="设备Key", )
     deviceValue = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="设备类型", )
+    devlogo = models.ImageField(upload_to=newImageName, blank=True, null=True, verbose_name="设备LOGO", )
+
     deviceState = models.CharField(max_length=255, default="0", blank=True, null=True, verbose_name="是否禁用",
                                    choices=device_state_choices)
     createTime = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
@@ -134,6 +155,12 @@ class netmaintain(models.Model):
     creator = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="创建者", )
     editor = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="修改者", )
 
+    def deviceValue(self):
+        if self.deviceType is not None:
+            return self.deviceType.deviceValue
+        else:
+            return ""
+
     class Meta:
         verbose_name = verbose_name_plural = '日常维护'
 
@@ -143,7 +170,8 @@ class netmaintainIpList(models.Model):
     netmaintain = models.ForeignKey(netmaintain, null=True, blank=True, on_delete=models.CASCADE, verbose_name="日常运维", )
     ip = models.GenericIPAddressField(verbose_name="IP", max_length=255, blank=True, null=True, default="")
 
-    resultText = models.TextField(verbose_name="运行结果", max_length=500000, blank=True, default="[]")
+    resultText = models.TextField(verbose_name="运行结果Json", max_length=500000, blank=True, default="[]")
+    cmdInfo = models.TextField(verbose_name="运行结果", max_length=500000, blank=True, default="[]")
     taskStatus = models.IntegerField(verbose_name="任务状态", default=0, choices=task_status_choices, blank=False,
                                      null=False)
     exceptionInfo = models.TextField(verbose_name="异常信息", max_length=500000, blank=True, default="")
@@ -167,6 +195,35 @@ class netmaintainIpListKwargs(models.Model):
     lastTime = models.DateTimeField(auto_now=True, verbose_name="修改时间")
     creator = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="创建者", )
     editor = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="修改者", )
+
+    class Meta:
+        verbose_name = verbose_name_plural = '扩展参数'
+
+
+# 运维模版
+class nettemp(models.Model):
+    title = models.CharField(verbose_name="名称", max_length=255, blank=True, default="")
+    deviceType = models.ForeignKey(deviceTypes, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="设备类型", )
+    cmds = models.TextField(verbose_name="CMDS", max_length=500000, blank=True, default="")
+    desc = models.TextField(verbose_name='备注', max_length=500000, blank=True, default="")
+    useCount = models.IntegerField(verbose_name="使用次数", default=0, blank=False, null=False)
+
+    createTime = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    lastTime = models.DateTimeField(auto_now=True, verbose_name="修改时间")
+    creator = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="创建者", )
+    editor = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="修改者", )
+
+    def deviceValue(self):
+        if self.deviceType is not None:
+            return self.deviceType.deviceValue
+        else:
+            return ""
+
+    def deviceTypeId(self):
+        if self.deviceType is not None:
+            return self.deviceType.id
+        else:
+            return ""
 
     class Meta:
         verbose_name = verbose_name_plural = '扩展参数'

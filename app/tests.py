@@ -1,5 +1,16 @@
 from django.test import TestCase
-import ast
+import ast, os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+a = []
+a.append("a")
+a.append("b")
+
+print(",".join(a))
+
+print(os.path.join(BASE_DIR, 'keys/my_rsa_public.pem'))
 
 print(ast.literal_eval('[]'))
 
