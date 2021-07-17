@@ -27,10 +27,10 @@ def newImageName(instance, filename):
 
 
 task_status_choices = (
-    (0, "待处理"),
-    (1, "处理中"),
-    (2, "已完成"),
-    (-1, "执行失败"),
+    ("待处理", "待处理"),
+    ("处理中", "处理中"),
+    ("已完成", "已完成"),
+    ("执行失败", "执行失败"),
 )
 device_state_choices = (
     (0, "禁用"),
@@ -172,8 +172,8 @@ class netmaintainIpList(models.Model):
 
     resultText = models.TextField(verbose_name="运行结果Json", max_length=500000, blank=True, default="[]")
     cmdInfo = models.TextField(verbose_name="运行结果", max_length=500000, blank=True, default="[]")
-    taskStatus = models.IntegerField(verbose_name="任务状态", default=0, choices=task_status_choices, blank=False,
-                                     null=False)
+    taskStatus = models.CharField(verbose_name="任务状态", default="待处理", choices=task_status_choices, blank=False,
+                                     null=False, max_length=255,)
     exceptionInfo = models.TextField(verbose_name="异常信息", max_length=500000, blank=True, default="")
     createTime = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     lastTime = models.DateTimeField(auto_now=True, verbose_name="修改时间")

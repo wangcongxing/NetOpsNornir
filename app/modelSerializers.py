@@ -5,6 +5,7 @@ from django.db import transaction
 import ast
 from utils import rsaEncrypt
 
+rsaUtil = rsaEncrypt.RsaUtil()
 ENV_PROFILE = os.getenv("ENV")
 if ENV_PROFILE == "pro":
     from NetOpsNornir import pro_settings as config
@@ -19,6 +20,7 @@ NetOpsAssetsUrl = config.initConfig["NetOpsAssetsUrl"]
 class taskListSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+
     def create(self, validated_data):
         print("validated_data=", validated_data)
         org_info = []
@@ -75,6 +77,7 @@ class taskListSerializer(serializers.ModelSerializer):
 class taskListDetailsSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+
     class Meta:
         model = models.taskListDetails
         fields = ["id", "taskList", "ip", "device_type", "device_type", "username", "password", "prot", "createTime",
@@ -85,6 +88,7 @@ class taskListDetailsSerializer(serializers.ModelSerializer):
 class deviceTypesSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+
     class Meta:
         model = models.deviceTypes
         fields = ["id", "deviceKey", "deviceValue", "deviceState", "createTime", "lastTime", "creator", "editor"]
@@ -94,6 +98,7 @@ class deviceTypesSerializer(serializers.ModelSerializer):
 class textFsmTemplatesSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+
     def create(self, validated_data):
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
 
@@ -113,6 +118,7 @@ class textFsmTemplatesSerializer(serializers.ModelSerializer):
 class textFsmTemplatesSerializerExport(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+
     class Meta:
         model = models.textFsmTemplates
         fields = ["id", "deviceValue", "name", "cmds", "TextFSMTemplate", "desc", "createTime", "lastTime", "creator",
@@ -126,22 +132,29 @@ class netmaintainSerializer(serializers.ModelSerializer):
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     # 当前任务所有IP
     netmaintainIpListShow = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
 
     def get_netmaintainIpListShow(self, obj):
         return models.netmaintainIpList.objects.filter(netmaintain=obj).values()
 
+    def get_progress(self, obj):
+        return 100
+
     def create(self, validated_data):
         password = validated_data["password"]
-        rsaUtil = RsaUtil()
-        validated_data.update({"password": str(rsaUtil.encrypt_by_public_key(password))})
+        phone = validated_data["phone"]
+        # 加密手机号码
+        validated_data.update({"phone": str(rsaUtil.encrypt_by_public_key(phone), 'utf-8')})
+        # 加密登录设备密码
+        validated_data.update({"password": str(rsaUtil.encrypt_by_public_key(password), 'utf-8')})
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
 
         netmaintain = super().create(validated_data)
 
-        dataTableKwargsData = self.initial_data.get("dataTableKwargsData", "[]")
-
+        dataTableKwargsData = json.loads(self.initial_data.get("dataTableKwargsData", "[]"))
+        dataTableKwargsData =list(x for x in dataTableKwargsData if x["ip"]!='')
         netTaskList = {}
-        for item in json.loads(dataTableKwargsData):
+        for item in dataTableKwargsData:
             if item["ip"] in netTaskList.keys():
                 cmds = netTaskList[item["ip"]]
                 netTaskList[item["ip"]] = cmds + [{"key": item["key"], "value": item["value"]}]
@@ -166,7 +179,8 @@ class netmaintainSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.netmaintain
-        fields = ["id", "name", "deviceType","deviceValue","username", "password", "port", "phone", "email", "startTime", "cmds",
+        fields = ["id", "name", "deviceType","progress", "deviceValue", "username", "password", "port", "phone", "email",
+                  "startTime", "cmds",
                   "desc",
                   "enabled", "netmaintainIpListShow",
                   "createTime", "lastTime", "creator", "editor"]
@@ -176,7 +190,6 @@ class netmaintainSerializer(serializers.ModelSerializer):
 class nettempSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
-
 
     def create(self, validated_data):
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
@@ -189,7 +202,8 @@ class nettempSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.nettemp
-        fields = ["id", "title", "deviceType","deviceValue", "deviceTypeId", "cmds", "desc", "useCount", "createTime", "lastTime", "creator",
+        fields = ["id", "title", "deviceType", "deviceValue", "deviceTypeId", "cmds", "desc", "useCount", "createTime",
+                  "lastTime", "creator",
                   "editor"]
 
         depth = 1

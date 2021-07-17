@@ -161,8 +161,3 @@ print("验签结果：>>> ")
 print(rsaUtil.verify_by_public_key(bytearray(message.encode(encoding='utf-8')), sign))
 '''
 
-rsaUtil = RsaUtil()
-s = 'RDEv4/w8UfB9a6BhEa7lrIzB/6453+HqfaDQ4L24BcaDSczXYQoeGpLrsE7JCDIA/+edxzwNQ2kjX+oEXbZjXY+30jBb44Rq8Izsu6t9kum3xHLO3Og+V1bTq7cLq/tErFmMRvaHwRfTXA0JDmwToC3aJFCRPBoCJ28uJUvXHOQ='
-
-a = rsaUtil.decrypt_by_private_key(s)
-print(a)

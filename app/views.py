@@ -525,10 +525,10 @@ def sendCommand(nid):
             item.exceptionInfo = ""
             item.cmdInfo = "\n".join(cmdInfo)
             item.resultText = ast.literal_eval(item.resultText) + resultText
-            item.taskStatus = 1
+            item.taskStatus = "已完成"
 
     except Exception as e:
-        item.taskStatus = -1
+        item.taskStatus = "执行失败"
         item.exceptionInfo = e.args
     finally:
         item.save()
@@ -557,7 +557,7 @@ class netmaintainViewSet(CustomViewBase):
     # 日常维护
     @action(methods=['get'], detail=False, url_path='run')
     def run(self, request, *args, **kwargs):
-        netmaintainIpLists = models.netmaintainIpList.objects.filter(Q(taskStatus=0),
+        netmaintainIpLists = models.netmaintainIpList.objects.filter(Q(taskStatus='待处理'),
                                                                      netmaintain__startTime__lte=strftime(
                                                                          '%Y-%m-%d %H:%M:%S', localtime()),
                                                                      netmaintain__enabled=True).order_by(
