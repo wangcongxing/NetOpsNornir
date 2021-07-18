@@ -5,6 +5,8 @@ from django.db import transaction
 import ast
 from utils import rsaEncrypt
 
+from django.db.models import Q
+
 rsaUtil = rsaEncrypt.RsaUtil()
 ENV_PROFILE = os.getenv("ENV")
 if ENV_PROFILE == "pro":
@@ -131,14 +133,13 @@ class netmaintainSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     # 当前任务所有IP
-    netmaintainIpListShow = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
 
-    def get_netmaintainIpListShow(self, obj):
-        return models.netmaintainIpList.objects.filter(netmaintain=obj).values()
-
     def get_progress(self, obj):
-        return 100
+        taskAll = models.netmaintainIpList.objects.filter(netmaintain=obj,)
+        taskOkCount = taskAll.filter(~Q(taskStatus='待处理'))
+
+        return '{:.0%}'.format(len(taskOkCount) / len(taskAll))
 
     def create(self, validated_data):
         password = validated_data["password"]
@@ -148,11 +149,12 @@ class netmaintainSerializer(serializers.ModelSerializer):
         # 加密登录设备密码
         validated_data.update({"password": str(rsaUtil.encrypt_by_public_key(password), 'utf-8')})
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
+        validated_data.update({"nettemp_id": int(self.initial_data["nettemp"])})
 
         netmaintain = super().create(validated_data)
 
         dataTableKwargsData = json.loads(self.initial_data.get("dataTableKwargsData", "[]"))
-        dataTableKwargsData =list(x for x in dataTableKwargsData if x["ip"]!='')
+        dataTableKwargsData = list(x for x in dataTableKwargsData if x["ip"] != '')
         netTaskList = {}
         for item in dataTableKwargsData:
             if item["ip"] in netTaskList.keys():
@@ -177,12 +179,58 @@ class netmaintainSerializer(serializers.ModelSerializer):
 
         return netmaintain
 
+    def update(self, instance, validated_data):
+        password = validated_data["password"]
+        phone = validated_data["phone"]
+        # 加密手机号码
+        validated_data.update({"phone": str(rsaUtil.encrypt_by_public_key(phone), 'utf-8')})
+        validated_data.update({"password": str(rsaUtil.encrypt_by_public_key(password), 'utf-8')})
+        validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
+        validated_data.update({"nettemp_id": int(self.initial_data["cmdtemp"])})
+
+        netmaintain = super().update(instance, validated_data)
+        # 扩展参数
+        # 判断id 是guid为新增  数字即修改create_update
+
+        dataTableKwargsData = json.loads(self.initial_data.get("dataTableKwargsData", "[]"))
+        dataTableKwargsData = list(x for x in dataTableKwargsData if x["ip"] != '')
+
+        netTaskList = {}
+        for item in dataTableKwargsData:
+            if item["ip"] in netTaskList.keys():
+                cmds = netTaskList[item["ip"]]
+                netTaskList[item["ip"]] = cmds + [{"key": item["key"], "value": item["value"]}]
+            else:
+                cmds = []
+                cmds.append({"key": item["key"], "value": item["value"]})
+                netTaskList.update({item["ip"]: cmds})
+
+        with transaction.atomic():
+            # 清空之前上次提交的所有参数
+            models.netmaintainIpList.objects.filter(netmaintain__id=netmaintain.id).delete()
+
+            # 批量新增
+            for key, items in netTaskList.items():
+                netmaintainiplist = models.netmaintainIpList.objects.create(netmaintain=netmaintain,
+                                                                            ip=key,
+                                                                            creator=netmaintain.creator,
+                                                                            editor=netmaintain.editor)
+                for cmdKwargs in items:
+                    models.netmaintainIpListKwargs.objects.create(netmaintainIpList_id=netmaintainiplist.id,
+                                                                  key=cmdKwargs["key"],
+                                                                  value=cmdKwargs["value"],
+                                                                  creator=netmaintain.creator,
+                                                                  editor=netmaintain.editor)
+
+        return netmaintain
+
     class Meta:
         model = models.netmaintain
-        fields = ["id", "name", "deviceType","progress", "deviceValue", "username", "password", "port", "phone", "email",
+        fields = ["id", "name", "deviceType", "progress", 'nettemp', "deviceValue", "username", "password", "port",
+                  "phone", "email",
                   "startTime", "cmds",
                   "desc",
-                  "enabled", "netmaintainIpListShow",
+                  "enabled",
                   "createTime", "lastTime", "creator", "editor"]
         depth = 1
 

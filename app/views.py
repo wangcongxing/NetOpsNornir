@@ -491,7 +491,7 @@ def sendCommand(nid):
     try:
         item = models.netmaintainIpList.objects.get(id=int(nid))
         netTask = item.netmaintain
-        password =rsaUtil.decrypt_by_private_key(netTask.password)
+        password = rsaUtil.decrypt_by_private_key(netTask.password)
         dev_info = {
             "device_type": netTask.deviceType.deviceKey,
             "ip": item.ip,
@@ -586,6 +586,26 @@ class netmaintainViewSet(CustomViewBase):
                                                                                        "creator",
                                                                                        "editor")
         return APIResponseResult.APIResponse(0, "ok", result)
+
+    # 返回扩展参数
+    @action(methods=['get'], detail=False, url_path='dataIpInfo')
+    def dataIpInfo(self, request, *args, **kwargs):
+        nid = request.GET.get("nid", 0)
+        if nid == 0:
+            return APIResponseResult.APIResponse(-1, "参数有无请稍后再试!!!")
+        datainfo = []
+        result = models.netmaintainIpList.objects.filter(netmaintain__id=nid, ).order_by("ip").values("id", "ip")
+        for item in result:
+            netmaintainiplistkwargs = models.netmaintainIpListKwargs.objects.filter(netmaintainIpList__id=item["id"])
+            for kInfo in netmaintainiplistkwargs:
+                datainfo.append({
+                    "id": kInfo.id,
+                    "pid":item["id"],
+                    "ip": item["ip"],
+                    "key": kInfo.key,
+                    "value": kInfo.value
+                })
+        return APIResponseResult.APIResponse(0, "ok", datainfo)
 
 
 # 运维场景

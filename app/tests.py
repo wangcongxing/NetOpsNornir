@@ -1,15 +1,18 @@
 from django.test import TestCase
-import ast, os
+import ast, os, uuid
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+g = 0
+print(isinstance(g, int))
 
 a = [{'id': '57735f8f-3ce3-ae7d-bc7a-782066120ae3', 'ip': '127.0.0.1', 'key': '', 'value': ''},
      {'id': '3e7d9924-70a5-f1dc-8101-c2b86385fbe0', 'ip': '', 'key': '', 'value': ''},
      {'id': 'ccb97f2e-dcb7-9641-a52b-8cc689ac8894', 'ip': '', 'key': '{{vlanNum}}', 'value': ''},
      {'id': '3a302a6e-4086-82af-84e9-6f8ef6063ba2', 'ip': '', 'key': '{{description}}', 'value': ''}]
 
-r = list(x for x in a if x["ip"]!='')
+r = list(x for x in a if x["ip"] != '')
 print(r)
 
 # Create your tests here.

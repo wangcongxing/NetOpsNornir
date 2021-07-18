@@ -11,8 +11,15 @@ else:
 
 
 # Create your models here.
+#https://www.cnblogs.com/guigujun/p/7614639.html
+'''
+Python中没有基于DCE的，所以uuid2可以忽略
+uuid4存在概率性重复，由无映射性，最好不用
+如果在global的分布式计算环境下，最好用uuid1
+若有名字的唯一性要求，最好使用uuid3或uuid5
+'''
 def newguid():
-    return str(uuid.uuid4())
+    return str(uuid.uuid1())
 
 
 def newImageName(instance, filename):
@@ -135,11 +142,42 @@ class taskListDetails(models.Model):
         verbose_name = verbose_name_plural = '任务详情表'
 
 
+
+# 运维模版
+class nettemp(models.Model):
+    title = models.CharField(verbose_name="名称", max_length=255, blank=True, default="")
+    deviceType = models.ForeignKey(deviceTypes, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="设备类型", )
+    cmds = models.TextField(verbose_name="CMDS", max_length=500000, blank=True, default="")
+    desc = models.TextField(verbose_name='备注', max_length=500000, blank=True, default="")
+    useCount = models.IntegerField(verbose_name="使用次数", default=0, blank=False, null=False)
+
+    createTime = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    lastTime = models.DateTimeField(auto_now=True, verbose_name="修改时间")
+    creator = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="创建者", )
+    editor = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="修改者", )
+
+    def deviceValue(self):
+        if self.deviceType is not None:
+            return self.deviceType.deviceValue
+        else:
+            return ""
+
+    def deviceTypeId(self):
+        if self.deviceType is not None:
+            return self.deviceType.id
+        else:
+            return ""
+
+    class Meta:
+        verbose_name = verbose_name_plural = '扩展参数'
+
 # 日常维护 写入配置
 class netmaintain(models.Model):
     name = models.CharField(verbose_name="事务名称", max_length=255, blank=True, default="")
     deviceType = models.ForeignKey(deviceTypes, null=True, blank=True, on_delete=models.SET_NULL,
                                    verbose_name="设备类型", )
+    nettemp = models.ForeignKey(nettemp, null=True, blank=True, on_delete=models.SET_NULL,
+                                   verbose_name="场景模版", )
     username = models.CharField(verbose_name="用户名", max_length=255, blank=True, default="")
     password = models.CharField(verbose_name="密码", max_length=255, blank=True, default="")
     port = models.IntegerField(verbose_name="端口", blank=True, null=True, default=22)
@@ -200,30 +238,3 @@ class netmaintainIpListKwargs(models.Model):
         verbose_name = verbose_name_plural = '扩展参数'
 
 
-# 运维模版
-class nettemp(models.Model):
-    title = models.CharField(verbose_name="名称", max_length=255, blank=True, default="")
-    deviceType = models.ForeignKey(deviceTypes, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="设备类型", )
-    cmds = models.TextField(verbose_name="CMDS", max_length=500000, blank=True, default="")
-    desc = models.TextField(verbose_name='备注', max_length=500000, blank=True, default="")
-    useCount = models.IntegerField(verbose_name="使用次数", default=0, blank=False, null=False)
-
-    createTime = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
-    lastTime = models.DateTimeField(auto_now=True, verbose_name="修改时间")
-    creator = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="创建者", )
-    editor = models.CharField(max_length=255, default="", blank=True, null=True, verbose_name="修改者", )
-
-    def deviceValue(self):
-        if self.deviceType is not None:
-            return self.deviceType.deviceValue
-        else:
-            return ""
-
-    def deviceTypeId(self):
-        if self.deviceType is not None:
-            return self.deviceType.id
-        else:
-            return ""
-
-    class Meta:
-        verbose_name = verbose_name_plural = '扩展参数'
