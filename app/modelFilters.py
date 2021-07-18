@@ -58,3 +58,13 @@ class nettempFilter(filters.FilterSet):
     class Meta:
         model = models.nettemp
         fields = ["deviceType", 'title', "desc", ]
+
+
+class netmaintainIpListFilter(filters.FilterSet):
+    # 模糊过滤
+    netmaintain = django_filters.CharFilter(field_name="netmaintain", )
+    ip = django_filters.CharFilter(field_name="ip", lookup_expr='icontains')
+
+    class Meta:
+        model = models.netmaintainIpList
+        fields = ["netmaintain", 'ip', ]

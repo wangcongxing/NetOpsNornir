@@ -136,7 +136,7 @@ class netmaintainSerializer(serializers.ModelSerializer):
     progress = serializers.SerializerMethodField()
 
     def get_progress(self, obj):
-        taskAll = models.netmaintainIpList.objects.filter(netmaintain=obj,)
+        taskAll = models.netmaintainIpList.objects.filter(netmaintain=obj, )
         taskOkCount = taskAll.filter(~Q(taskStatus='待处理'))
 
         return '{:.0%}'.format(len(taskOkCount) / len(taskAll))
@@ -149,7 +149,8 @@ class netmaintainSerializer(serializers.ModelSerializer):
         # 加密登录设备密码
         validated_data.update({"password": str(rsaUtil.encrypt_by_public_key(password), 'utf-8')})
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
-        validated_data.update({"nettemp_id": int(self.initial_data["nettemp"])})
+        if self.initial_data["cmdtemp"]:
+            validated_data.update({"nettemp_id": int(self.initial_data["cmdtemp"])})
 
         netmaintain = super().create(validated_data)
 
@@ -186,8 +187,8 @@ class netmaintainSerializer(serializers.ModelSerializer):
         validated_data.update({"phone": str(rsaUtil.encrypt_by_public_key(phone), 'utf-8')})
         validated_data.update({"password": str(rsaUtil.encrypt_by_public_key(password), 'utf-8')})
         validated_data.update({"deviceType_id": int(self.initial_data["deviceType"])})
-        validated_data.update({"nettemp_id": int(self.initial_data["cmdtemp"])})
-
+        if self.initial_data["cmdtemp"]:
+            validated_data.update({"nettemp_id": int(self.initial_data["cmdtemp"])})
         netmaintain = super().update(instance, validated_data)
         # 扩展参数
         # 判断id 是guid为新增  数字即修改create_update
@@ -233,6 +234,39 @@ class netmaintainSerializer(serializers.ModelSerializer):
                   "enabled",
                   "createTime", "lastTime", "creator", "editor"]
         depth = 1
+
+
+class netmaintainIpListSerializer(serializers.ModelSerializer):
+    executionInfo = serializers.SerializerMethodField()
+
+    def get_executionInfo(self,obj):
+        cmds = obj.netmaintain.cmds
+        netmaintainiplistkwargs = models.netmaintainIpListKwargs.objects.filter(netmaintainIpList=obj)
+        for cmdInfo in netmaintainiplistkwargs:
+            cmds = str(cmds).replace(cmdInfo.key, cmdInfo.value)
+        cmds = str(cmds).replace("\n", ",").replace(";", ",").split(",")  # 根据回撤逗号分割
+
+        return cmds
+
+    class Meta:
+        model = models.netmaintainIpList
+        fields = ["id", "ip", "executionInfo", "resultText", "cmdInfo", "exceptionInfo",
+                  "createTime", "lastTime", "creator", "editor"]
+
+
+class netmaintainExportSerializer(serializers.ModelSerializer):
+    enabledShow = serializers.SerializerMethodField()
+
+    def get_enabledShow(self, obj):
+        return "已启用" if obj.enabled else "已禁用"
+
+    class Meta:
+        model = models.netmaintain
+        fields = ["id", "name","deviceValue", "username", "port", "email",
+                  "startTime", "cmds",
+                  "desc",
+                  "enabledShow",
+                  "createTime", "lastTime", "creator", "editor"]
 
 
 class nettempSerializer(serializers.ModelSerializer):

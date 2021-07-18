@@ -585,6 +585,7 @@ class netmaintainViewSet(CustomViewBase):
                                                                                        "createTime", "lastTime",
                                                                                        "creator",
                                                                                        "editor")
+
         return APIResponseResult.APIResponse(0, "ok", result)
 
     # 返回扩展参数
@@ -607,6 +608,14 @@ class netmaintainViewSet(CustomViewBase):
                 })
         return APIResponseResult.APIResponse(0, "ok", datainfo)
 
+class netmaintainIpListViewSet(CustomViewBase):
+    queryset = models.netmaintainIpList.objects.all().order_by('-id', )
+    serializer_class = modelSerializers.netmaintainIpListSerializer
+    filter_class = modelFilters.netmaintainIpListFilter
+    ordering_fields = ['useCount', '-id', ]  # 排序
+    permission_classes = [modelPermission.netmaintainIpListPermission]
+
+
 
 # 运维场景
 class nettempViewSet(CustomViewBase):
@@ -615,3 +624,8 @@ class nettempViewSet(CustomViewBase):
     filter_class = modelFilters.nettempFilter
     ordering_fields = ['useCount', '-id', ]  # 排序
     permission_classes = [modelPermission.nettempPermission]
+
+
+
+
+
