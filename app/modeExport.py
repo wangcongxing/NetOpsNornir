@@ -10,9 +10,9 @@ import os, uuid, time
 
 
 # 导出任务信息
-class textFsmTemplatesExport(XLSXFileMixin, ReadOnlyModelViewSet):
-    queryset = models.textFsmTemplates.objects.all().order_by('-id')
-    serializer_class = modelSerializers.textFsmTemplatesSerializerExport
+class cmdConfigExport(XLSXFileMixin, ReadOnlyModelViewSet):
+    queryset = models.cmdConfig.objects.all().order_by('-id')
+    serializer_class = modelSerializers.cmdConfigSerializerExport
     renderer_classes = (XLSXRenderer,)
     filename = '{}.xlsx'.format(str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
     column_header = {

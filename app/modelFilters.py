@@ -11,7 +11,7 @@ class taskListFilter(filters.FilterSet):
     desc = django_filters.CharFilter(field_name="desc", lookup_expr='icontains')
 
     class Meta:
-        model = models.taskList
+        model = models.readTaskList
         fields = ['eoaNumber', 'taskName', 'taskStatus', "desc"]
 
 
@@ -26,14 +26,14 @@ class deviceTypesFilter(filters.FilterSet):
         fields = ['id', 'deviceValue', 'deviceState']
 
 
-class textFsmTemplatesFilter(filters.FilterSet):
+class cmdConfigFilter(filters.FilterSet):
     # 模糊过滤
     deviceType = django_filters.CharFilter(field_name="deviceType", )
     cmds = django_filters.CharFilter(field_name="cmds", lookup_expr='icontains')
     desc = django_filters.CharFilter(field_name="desc", lookup_expr='icontains')
 
     class Meta:
-        model = models.textFsmTemplates
+        model = models.cmdConfig
         fields = ["deviceType", 'cmds', "desc"]
 
 

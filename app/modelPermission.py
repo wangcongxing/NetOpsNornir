@@ -38,7 +38,7 @@ class deviceTypesPermission(BasePermission):
         return True
 
 
-class textFsmTemplatesPermission(BasePermission):
+class cmdConfigPermission(BasePermission):
     def has_permission(self, request, view):
         """让所有用户都有权限"""
         print("has_permission=", request.user)

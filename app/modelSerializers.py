@@ -25,51 +25,41 @@ class taskListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print("validated_data=", validated_data)
-        org_info = []
-        # org_info = filter(lambda x: "layuiTreeCheck" in item, self.initial_data)
-        for item in self.initial_data:
-            if "layuiTreeCheck" in item:
-                org_info.append(self.initial_data[item])
-        print("org_info=", org_info)
+
+        assetsInfo = json.loads(self.initial_data.get("devInfo", "[]"))
         cmdids = list(filter(None, str(self.initial_data["cmdids"]).split(",")))
-        if cmdids is [] or org_info is []:
+        if cmdids is []:
             # 如何返回错误信息
             return False
-        # 调用查询资产接口 返回
-        result = requests.get(
-            NetOpsAssetsUrl + "/opsassets/app/networkAssets/get_assets_info/?access_token=" + self.initial_data[
-                "access_token"] + "&orgid=" + ",".join(org_info), proxies={'http': None, 'https': None, }).json()
-        print("result=", result)
-        assetsInfo = result["data"]
+
+        username = self.initial_data.get("username", "")
+
+        password = str(rsaUtil.encrypt_by_public_key(self.initial_data.get("password", "")), 'utf-8')
+
         tasklistdetails = []
         with transaction.atomic():
             taskList = super().create(validated_data)
-            textfsmtemplates = models.textFsmTemplates.objects.filter(id__in=cmdids)
+            textfsmtemplates = models.cmdConfig.objects.filter(id__in=cmdids)
             for item in assetsInfo:
                 print("item", item)
                 for tft in textfsmtemplates:
                     if tft.deviceType.id == int(item["deviceType"]):
-                        username = item["username"] if item["username"] else "admin"
-                        password = item["password"] if item["password"] else "password123456"
-
                         tasklistdetails.append(
-                            models.taskListDetails(taskList=taskList,
-                                                   ip=item["mip"] if item["mip"] == "" else item["ip"],
-                                                   deviceType_id=int(item["deviceType"]),
-                                                   executeState="未完成",
-                                                   oldResult="",
-                                                   jsonResult="",
-                                                   textfsmtemplates=tft,
-                                                   username=username,
-                                                   password=password, port=item["port"], ))
+                            models.readTaskListDetails(taskList=taskList,
+                                                       ip=item["ip"],
+                                                       deviceType_id=int(item["deviceType"]),
+                                                       taskStatus="待处理",
+                                                       cmdConfig=tft,
+                                                       username=username,
+                                                       password=password, port=item["port"], ))
             if tasklistdetails:
-                models.taskListDetails.objects.bulk_create(tasklistdetails)
+                models.readTaskListDetails.objects.bulk_create(tasklistdetails)
         return taskList
 
         # 验证code
 
     class Meta:
-        model = models.taskList
+        model = models.readTaskList
         fields = ["id", "nid", "taskName", "taskStatus", "taskStatusValue", "callbackurl", "callbackcount", "desc",
                   "creator", "editor",
                   "lastTime", "createTime"]
@@ -81,10 +71,10 @@ class taskListDetailsSerializer(serializers.ModelSerializer):
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
 
     class Meta:
-        model = models.taskListDetails
-        fields = ["id", "taskList", "ip", "device_type", "device_type", "username", "password", "prot", "createTime",
+        model = models.readTaskListDetails
+        fields = ["id", "taskList", "ip", "deviceType", "username", "password", "port", "createTime",
                   "lastTime", "creator", "editor"]
-        # depth = 1
+        depth = 1
 
 
 class deviceTypesSerializer(serializers.ModelSerializer):
@@ -97,7 +87,7 @@ class deviceTypesSerializer(serializers.ModelSerializer):
         # depth = 1
 
 
-class textFsmTemplatesSerializer(serializers.ModelSerializer):
+class cmdConfigSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
 
@@ -111,18 +101,18 @@ class textFsmTemplatesSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     class Meta:
-        model = models.textFsmTemplates
+        model = models.cmdConfig
         fields = ["id", "deviceKey", "deviceValue", "name", "cmds", "TextFSMTemplate", "desc", "createTime", "editor",
                   "lastTime", ]
         depth = 1
 
 
-class textFsmTemplatesSerializerExport(serializers.ModelSerializer):
+class cmdConfigSerializerExport(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
 
     class Meta:
-        model = models.textFsmTemplates
+        model = models.cmdConfig
         fields = ["id", "deviceValue", "name", "cmds", "TextFSMTemplate", "desc", "createTime", "lastTime", "creator",
                   "editor", ]
         depth = 1
@@ -158,13 +148,14 @@ class netmaintainSerializer(serializers.ModelSerializer):
         dataTableKwargsData = list(x for x in dataTableKwargsData if x["ip"] != '')
         netTaskList = {}
         for item in dataTableKwargsData:
-            if item["ip"] in netTaskList.keys():
-                cmds = netTaskList[item["ip"]]
-                netTaskList[item["ip"]] = cmds + [{"key": item["key"], "value": item["value"]}]
+            netip = str(item["ip"]).strip()
+            if netip in netTaskList.keys():
+                cmds = netTaskList[netip]
+                netTaskList[netip] = cmds + [{"key": str(item["key"]).strip(), "value": str(item["value"])}]
             else:
                 cmds = []
-                cmds.append({"key": item["key"], "value": item["value"]})
-                netTaskList.update({item["ip"]: cmds})
+                cmds.append({"key": str(item["key"]).strip(), "value": str(item["value"]).strip()})
+                netTaskList.update({netip: cmds})
 
         for key, items in netTaskList.items():
             netmaintainiplist = models.netmaintainIpList.objects.create(netmaintain=netmaintain,
@@ -198,13 +189,14 @@ class netmaintainSerializer(serializers.ModelSerializer):
 
         netTaskList = {}
         for item in dataTableKwargsData:
-            if item["ip"] in netTaskList.keys():
-                cmds = netTaskList[item["ip"]]
-                netTaskList[item["ip"]] = cmds + [{"key": item["key"], "value": item["value"]}]
+            netip = str(item["ip"]).strip()
+            if netip in netTaskList.keys():
+                cmds = netTaskList[netip]
+                netTaskList[netip] = cmds + [{"key": str(item["key"]).strip(), "value": str(item["value"])}]
             else:
                 cmds = []
-                cmds.append({"key": item["key"], "value": item["value"]})
-                netTaskList.update({item["ip"]: cmds})
+                cmds.append({"key": str(item["key"]).strip(), "value": str(item["value"]).strip()})
+                netTaskList.update({netip: cmds})
 
         with transaction.atomic():
             # 清空之前上次提交的所有参数
@@ -239,7 +231,7 @@ class netmaintainSerializer(serializers.ModelSerializer):
 class netmaintainIpListSerializer(serializers.ModelSerializer):
     executionInfo = serializers.SerializerMethodField()
 
-    def get_executionInfo(self,obj):
+    def get_executionInfo(self, obj):
         cmds = obj.netmaintain.cmds
         netmaintainiplistkwargs = models.netmaintainIpListKwargs.objects.filter(netmaintainIpList=obj)
         for cmdInfo in netmaintainiplistkwargs:
@@ -262,7 +254,7 @@ class netmaintainExportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.netmaintain
-        fields = ["id", "name","deviceValue", "username", "port", "email",
+        fields = ["id", "name", "deviceValue", "username", "port", "email",
                   "startTime", "cmds",
                   "desc",
                   "enabledShow",
@@ -289,3 +281,9 @@ class nettempSerializer(serializers.ModelSerializer):
                   "editor"]
 
         depth = 1
+
+
+class lldpInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.lldpInfo
+        fields = ["__all__"]

@@ -3,7 +3,42 @@ import ast, os, uuid
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+a = [{'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+      'Current_software_images': 'flash:/msr3600x1-cmw710-boot-r0809p33.bin', 'Main_startup_software_images': '',
+      'Backup_startup_software_images': ''}, {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+                                              'Current_software_images': 'flash:/msr3600x1-cmw710-system-r0809p33.bin',
+                                              'Main_startup_software_images': '', 'Backup_startup_software_images': ''},
+     {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+      'Current_software_images': 'flash:/msr3600x1-cmw710-escan-r0809p33.bin', 'Main_startup_software_images': '',
+      'Backup_startup_software_images': ''}, {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+                                              'Current_software_images': 'flash:/msr3600x1-cmw710-security-r0809p33.bin',
+                                              'Main_startup_software_images': '', 'Backup_startup_software_images': ''},
+     {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+      'Current_software_images': 'flash:/msr3600x1-cmw710-voice-r0809p33.bin', 'Main_startup_software_images': '',
+      'Backup_startup_software_images': ''}, {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+                                              'Current_software_images': 'flash:/msr3600x1-cmw710-data-r0809p33.bin',
+                                              'Main_startup_software_images': '', 'Backup_startup_software_images': ''},
+     {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+      'Current_software_images': 'flash:/msr3600x1-cmw710-boot-r0809p33.bin', 'Main_startup_software_images': '',
+      'Backup_startup_software_images': ''}, {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+                                              'Current_software_images': 'flash:/msr3600x1-cmw710-system-r0809p33.bin',
+                                              'Main_startup_software_images': '', 'Backup_startup_software_images': ''},
+     {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+      'Current_software_images': 'flash:/msr3600x1-cmw710-escan-r0809p33.bin', 'Main_startup_software_images': '',
+      'Backup_startup_software_images': ''}, {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+                                              'Current_software_images': 'flash:/msr3600x1-cmw710-security-r0809p33.bin',
+                                              'Main_startup_software_images': '', 'Backup_startup_software_images': ''},
+     {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+      'Current_software_images': 'flash:/msr3600x1-cmw710-voice-r0809p33.bin', 'Main_startup_software_images': '',
+      'Backup_startup_software_images': ''}, {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '',
+                                              'Current_software_images': 'flash:/msr3600x1-cmw710-data-r0809p33.bin',
+                                              'Main_startup_software_images': '', 'Backup_startup_software_images': ''},
+     {'Name': 'SZ-IRA-MAN-RT', 'Chassis_ID': '', 'Slot_ID': '', 'Current_software_images': 'None',
+      'Main_startup_software_images': '', 'Backup_startup_software_images': ''}]
 
+oldResult = a[-1]["result"]
+cmd = a[-1]["cmd"]
+print("oldResult=", oldResult)
 g = 0
 print(isinstance(g, int))
 

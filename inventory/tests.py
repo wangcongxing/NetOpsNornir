@@ -28,15 +28,17 @@ dev_info = {
 }
 
 conn = Netmiko(**dev_info)
+
+output = conn.send_command_timing("display lldp neighbor verbose", use_textfsm=True)
+print(output)
 print("机器名:", conn.base_prompt)
 print("登录成功", dev_info["ip"])
 cmds = ['sys', 'vlan 11', 'description  10.10.10.13 32', 'quit', 'quit', 'save', 'y', '', 'y']
 
-
 for cmd in cmds:
-    print("cmd=",cmd)
-    output = conn.send_command_timing(cmd)
-    print("output=",output)
+    print("cmd=", cmd)
+    output = conn.send_command_timing(cmd, use_textfsm=True)
+    print("output=", output)
 
 '''
 cmds = ['','vlan 11', 'description  10.10.10.13 32', ]
@@ -46,7 +48,6 @@ conn.save_config()
 
 print(output)
 '''
-
 
 '''
 with ConnectHandler(**dev_info) as conn:
