@@ -119,8 +119,8 @@ class readTaskList(models.Model):
     nid = models.CharField(verbose_name="任务编号", max_length=255, blank=False, null=False, default=newguid)
     eoaNumber = models.CharField(verbose_name="EOA编号", max_length=255, blank=True, null=True, default="")
     taskName = models.CharField(verbose_name="任务名称", max_length=255, blank=True, null=True, default="")
-    taskStatus = models.CharField(verbose_name="任务状态", max_length=255, choices=task_status_choices, blank=False,
-                                  null=False)
+    taskStatus = models.CharField(verbose_name="任务状态", max_length=255, choices=task_status_choices, blank=True,
+                                  null=True)
     callbackurl = models.URLField(verbose_name="回调地址", max_length=800, default="",
                                   blank=False, null=False)
     callbackcount = models.IntegerField(verbose_name="回调次数", default=1, blank=False, null=False)
@@ -148,8 +148,8 @@ class readTaskListDetails(models.Model):
     username = models.CharField(verbose_name="用户名", max_length=255, blank=True, null=True, default="")
     password = models.CharField(verbose_name="密码", max_length=255, blank=True, null=True, default="")
     port = models.IntegerField(verbose_name="端口", blank=True, null=True, default=22)
-    taskStatus = models.CharField(verbose_name="任务状态", default="待处理", choices=task_status_choices, blank=False,
-                                  null=False, max_length=255, )
+    taskStatus = models.CharField(verbose_name="任务状态", default="待处理", choices=task_status_choices, blank=True,
+                                  null=True, max_length=255, )
     resultText = models.TextField(verbose_name="运行结果Json", max_length=500000, blank=True, default="[]")
     cmdInfo = models.TextField(verbose_name="运行结果", max_length=500000, blank=True, default="[]")
     jsonResult = models.TextField(verbose_name='解析结果', max_length=500000, blank=True, default="")

@@ -16,7 +16,10 @@ Value Swap_Free (\d+)
 
 Start
   ^<${Name}>display\s+memory$$
-  ^Chassis\s+${Chassis_ID}\s+Slot\s+${Slot_ID}:\s+$$
+  ^Slot\s+${Slot_ID}:\s+$$ -> Condition_a
+  ^Chassis\s+${Chassis_ID}\s+Slot\s+${Slot_ID}:\s+$$ -> Condition_a
+
+Condition_a
   ^Mem:\s+${Mem_Total}\s+${Mem_Used}\s+${Mem_Free}\s+${Mem_Shared}\s+${Mem_Buffers}\s+${Mem_Cached}\s+${Mem_FreeRatio}$$
   ^.*Buffers\/Cache:\s+${Buffers_or_Cache_Used}\s+${Buffers_or_Cache_Free}$$
   ^Swap:\s+${Swap_Total}\s+${Swap_Used}\s+${Swap_Free}$$ -> Record

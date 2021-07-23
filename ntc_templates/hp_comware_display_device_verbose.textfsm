@@ -3,10 +3,13 @@ Value Chassis_ID (\d)
 Value SLOT_ID (\d)
 Value STATUS ([a-zA-Z]+)
 Value TYPE_NAME (\w+)
+Value HARDWARE (\S+)
 Value SOFT_VER (\S+)
 Value PCB_1_VER (\S+)
 Value FPGA_VER (\d+)
 Value BootRom_VER (\d+)
+Value DRIVER (\S+)
+Value CPLD (\S+)
 Value CPLD_1_VER (\d+)
 Value CPLD_2_VER (\d+)
 Value CHIP (\d+)
@@ -14,7 +17,10 @@ Value LEARNING_MODE (\w+)
 
 Start
   ^<${Name}>display\s+device\s+verbose$$
-  ^Chassis\s+${Chassis_ID}\s+Slot\s+${SLOT_ID}\s+info:$$
+  ^Chassis\s+${Chassis_ID}\s+Slot\s+${SLOT_ID}\s+info:$$ -> Condition_a
+  ^.*Slot\s+${SLOT_ID}$$ -> Condition_b
+
+Condition_a
   ^Status\s+:\s+${STATUS}$$
   ^Type\s+:\s+${TYPE_NAME}$$
   ^Software\s+Ver\s+:\s+${SOFT_VER}$$
@@ -33,5 +39,12 @@ Start
   ^CPLD\s+1\s+Ver\s+:\s+${CPLD_1_VER}$$
   ^Chip\s+:\s+${CHIP}$$
   ^\s+Learning\s+Mode:\s+${LEARNING_MODE}$$ -> Record
+
+Condition_b
+  ^\s+Status:\s+${STATUS}$$
+  ^\s+Type:\s+${TYPE_NAME}$$
+  ^\s+Hardware:\s+${HARDWARE}$$
+  ^\s+Driver:\s+${DRIVER}$$
+  ^\s+CPLD:\s+${CPLD}$$ -> Record
 
 EOF

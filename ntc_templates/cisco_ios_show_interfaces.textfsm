@@ -1,0 +1,48 @@
+Value Filldown Name (\S+)
+Value Interface (\S+)
+Value Physical_link (Up|Down)
+Value Interface_index (\d+)
+Value SNMP_ifIndex (\d+)
+Value Type (\S+)
+Value Link_level_type (\S+)
+Value MTU (\w+)
+Value Link_mode (\S+)
+Value Speed (\w+)
+Value BPDU_Error (\S+)
+Value MAC_REWRITE_Error (\S+)
+Value Loopback (\S+)
+Value Source_filtering (\S+)
+Value Flow_control (\S+)
+Value Auto_negotiation (\S+)
+Value Remote_fault (\S+)
+Value Device_flags ([\w+\s+]+)
+Value Interface_flags ([\S+\s+]+)
+Value Link_flags ([\S+\s+]+)
+Value CoS_queues ([\S+\s+]+)
+Value Current_address (\S+)
+Value Hardware_address (\S+)
+Value Last_flapped ([\S+\s+]+)
+Value Input_rate ([\S+\s+]+)
+Value Output_rate ([\S+\s+]+)
+Value Active_alarms (\w+)
+Value Active_defects (\w+)
+Value Interface_transmit_statistics ([\S+\s+]+)
+
+Start
+  ^.*@${Name}>\s+show\s+interfaces.*$$
+  ^Physical\s+interface:\s+${Interface},.*Physical\s+link\s+is\s+${Physical_link}$$
+  ^\s+Interface\s+index:\s+${Interface_index},\s+SNMP\s+ifIndex:\s+${SNMP_ifIndex}$$
+  ^\s+Remote\s+fault:\s+${Remote_fault}$$
+  ^\s+Device\s+flags\s+:\s+${Device_flags}$$
+  ^\s+Interface\s+flags:\s+${Interface_flags}$$
+  ^\s+Link\s+flags\s+:\s+${Link_flags}$$
+  ^\s+CoS\s+queues\s+:\s+${CoS_queues}$$
+  ^\s+Current\s+address:\s+${Current_address},\s+Hardware\s+address:\s+${Hardware_address}$$
+  ^\s+Last\s+flapped\s+:\s+${Last_flapped}$$
+  ^\s+Input\s+rate\s+:\s+${Input_rate}$$
+  ^\s+Output\s+rate\s+:\s+${Output_rate}$$
+  ^\s+Active\s+alarms\s+:\s+${Active_alarms}$$
+  ^\s+Active\s+defects\s+:\s+${Active_defects}$$
+  ^\s+Interface\s+transmit\s+statistics:\s+${Interface_transmit_statistics}$$ -> Record
+
+EOF

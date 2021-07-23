@@ -1,15 +1,17 @@
 Value Filldown Name (\S+)
-Value Chassis_ID (\d)
-Value SLOT_ID (\d)
+Value Chassis_ID (\d+)
+Value SLOT_ID (\d+)
+Value SUBSLOT_ID (\d+)
 Value SENSOR (\w+\s+\d)
 Value TEMPERATURE (\d+)
-Value LOWER (\d)
+Value LOWER (\d+)
 Value WARNING (\d+)
 Value ALARM (\d+)
 Value SHUTDOWN (\w+)
 
 Start
   ^<${Name}>display\s+environment$$
+  ^${SLOT_ID}\s+${SUBSLOT_ID}\s+${SENSOR}\s+${TEMPERATURE}\s+${LOWER}\s+${WARNING}\s+${ALARM}\s+$$ -> Record
   ^\s+${Chassis_ID}\s+${SLOT_ID}\s+${SENSOR}\s+${TEMPERATURE}\s+${LOWER}\s+${WARNING}\s+${ALARM}\s+${SHUTDOWN}\s+$$ -> Record
 
 EOF

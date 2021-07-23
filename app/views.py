@@ -253,6 +253,7 @@ def Read_Send_Command(dev):
                 template = TextFSM(f)
                 jsonResult = template.ParseTextToDicts(oldResult)  # template.ParseText(oldResult)
                 taskListdetails.jsonResult = jsonResult
+                f.close()
             else:
                 # 2.如果没有配置textFSM用系统自带的,use_textfsm=True
 
@@ -267,6 +268,7 @@ def Read_Send_Command(dev):
             taskListdetails.save()
 
     except Exception as e:
+        print("nid={},ip={}".format(nid,dev["ip"]))
         taskListdetails.exceptionInfo = e.args
         taskListdetails.save()
 
@@ -410,7 +412,7 @@ class taskListViewSet(CustomViewBase):
             command_list.append({"devs": devs})
         runInfo = []
         runInfo.append({"start": strftime('%Y-%m-%d %H:%M:%S', localtime())})
-        print("command_list=", command_list)
+        #print("command_list=", command_list)
         with ThreadPoolExecutor(max_workers=20) as executor:
             for commandList in command_list:
                 executor.map(Read_Send_Command, commandList["devs"])
@@ -538,7 +540,11 @@ class taskListViewSet(CustomViewBase):
             sheet = wb.get_sheet(sheetName["cmdConfig__name"])
             # 写入对应的列名
             if listResult:
-                firstItem = listResult[0]
+                resultLength = []
+                for i in listResult:
+                    resultLength.append(len(i))
+                m = resultLength.index(max(resultLength))
+                firstItem = listResult[m]
                 colnames = firstItem.keys()
                 # 向Excel表单中写入表头
                 for index, name in enumerate(colnames):
@@ -593,6 +599,22 @@ class taskListViewSet(CustomViewBase):
         return APIResponseResult.APIResponse(0, 'success', results=result,
                                              http_status=status.HTTP_200_OK, )
 
+    @action(methods=['get'], detail=False, url_path='cliFormat')
+    def cliFormat(self, request, *args, **kwargs):
+        netmaintainiplist = models.readTaskListDetails.objects.filter(jsonResult='[]')
+        for item in netmaintainiplist:
+            # 自定TextFSM模版路径
+            textFsmTemplate = os.path.join(NTC_TEMPLATES_DIR,
+                                           '{}_{}.textfsm'.format(item.deviceType.deviceKey,item.cmdConfig.cmds.replace(" ", "_")))
+
+            with open(textFsmTemplate) as f:
+                template = TextFSM(f)
+                oldResult = ast.literal_eval(item.resultText)[-1]["result"]
+                jsonResult = template.ParseTextToDicts(oldResult)  # template.ParseText(oldResult)
+                print(jsonResult)
+                item.jsonResult = jsonResult
+                item.save()
+                f.close()
 
 class taskListDetailsViewSet(CustomViewBase):
     queryset = models.readTaskListDetails.objects.all().order_by('-id')
@@ -668,6 +690,7 @@ class netmaintainViewSet(CustomViewBase):
         runInfo.append({"end": strftime('%Y-%m-%d %H:%M:%S', localtime())})
         return APIResponseResult.APIResponse(0, "success", runInfo)
 
+
     # 下载
     @action(methods=['get'], detail=False, url_path='download')
     def download(self, request, *args, **kwargs):
@@ -734,7 +757,7 @@ class lldpInfoViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         runInfo = []
         runInfo.append({"start": strftime('%Y-%m-%d %H:%M:%S', localtime())})
         for item in coreDeviceInfo:
-            lldpinfo = models.lldpInfo.objects.create(title="2020")
+            lldpinfo = models.lldpInfo.objects.create()
             pObj = models.lldpDetailsInfo.objects.create(lldpInfo=lldpinfo, parent=None,
                                                          local_interface="",
                                                          chassis_id="",

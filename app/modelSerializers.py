@@ -25,6 +25,7 @@ class taskListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print("validated_data=", validated_data)
+        validated_data.update({"taskStatus": "待处理"})
 
         assetsInfo = json.loads(self.initial_data.get("devInfo", "[]"))
         cmdids = list(filter(None, str(self.initial_data["cmdids"]).split(",")))
@@ -284,6 +285,35 @@ class nettempSerializer(serializers.ModelSerializer):
 
 
 class lldpInfoSerializer(serializers.ModelSerializer):
+    # 当前任务所有IP
+    switchcount = serializers.SerializerMethodField()
+    routercount = serializers.SerializerMethodField()
+    firewallcount = serializers.SerializerMethodField()
+    linecount = serializers.SerializerMethodField()
+    monitorcount = serializers.SerializerMethodField()
+
+
+    # 交换机-
+    def get_switchcount(self, obj):
+        return str(500) + "台"
+
+    # 路由器-
+    def get_routercount(self, obj):
+        return str(500) + "台"
+
+    # 防火墙-
+    def get_firewallcount(self, obj):
+        return str(500) + "台"
+
+    # 专线设备 电信 联通 移动
+    def get_linecount(self, obj):
+        return str(500) + "条"
+
+    # 监控设备
+    def get_monitorcount(self, obj):
+        return str(5) + "监控"
+
     class Meta:
         model = models.lldpInfo
-        fields = ["__all__"]
+        fields = ["title", "switchcount", "routercount", "firewallcount", "linecount", "monitorcount", "createTime",
+                  "lastTime"]

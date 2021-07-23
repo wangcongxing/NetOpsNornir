@@ -15,6 +15,7 @@ Value SYSTEM_POLL_INTERVAL ([\S+\s+]+)
 
 Start
   ^<${Name}>dis\s+ntp\s+status$$
+  ^<\S+>\s+Clock\s+status:\s+${CLOCK_STATUS}$$ -> Condition_a
   ^\s+Clock\s+status:\s+${CLOCK_STATUS}$$
   ^\s+Clock\s+stratum:\s+${CLOCK_STRATUM}\s+$$
   ^\s+System\s+peer:\s+${SYSTEM_PEER}\s+$$
@@ -28,5 +29,9 @@ Start
   ^\s+Root\s+dispersion:\s+${ROOT_DISPERSION}\s+$$
   ^\s+Reference\s+time:\s+${REFERENCE_TIME}$$
   ^\s+System\s+poll\s+interval:\s+${SYSTEM_POLL_INTERVAL}$$ -> Record
+
+Condition_a
+  ^\s+Clock\s+stratum:\s+${CLOCK_STRATUM}\s+$$
+  ^\s+Reference\s+clock\s+ID:\s+${REFERENCE_CLOCK_ID}$$ -> Record
 
 EOF

@@ -1,10 +1,13 @@
 Value Filldown Name (\S+)
 Value Chassis_ID (\d)
+Value INDEX (\d+)
 Value FAN_STATE (\w+)
+Value SPEED_LEVEL (\d+)
 
 Start
   ^<${Name}>display\s+fan$$
   ^\s+Chassis\s+${Chassis_ID}:
-  ^\s+Fan\s+Frame\s+\d\s+State:\s+${FAN_STATE}$$ -> Record
+  ^\s+Fan\s+Frame\s+${INDEX}\s+State:\s+${FAN_STATE}$$ -> Record
+  ^\s+${INDEX}\s+${FAN_STATE}\s+${SPEED_LEVEL}\s+$$ -> Record
 
 EOF

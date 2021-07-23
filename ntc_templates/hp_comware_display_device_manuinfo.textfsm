@@ -12,17 +12,25 @@ Value VENDOR_NAME (\w+)
 Start
   ^<${Name}>display\s+device\s+manuinfo$$
   ^Chassis\s+${Chassis_ID}:$$
-  ^\s+Slot\s+${SLOT_ID}\s+CPU\s+${CPU_ID}:$$
-  ^\s+DEVICE_NAME\s+:\s+${DEVICE_NAME}$$
-  ^\s+DEVICE_SERIAL_NUMBER\s+:\s+${DEVICE_SERIAL_NUMBER}$$
-  ^\s+MAC_ADDRESS\s+:\s+${MAC_ADDRESS}$$
-  ^\s+MANUFACTURING_DATE\s+:\s+${MANUFACTURING_DATE}$$
-  ^\s+VENDOR_NAME\s+:\s+${VENDOR_NAME}$$ -> Record
-  ^Power\s+${POWER_ID}:$$
-  ^\s+DEVICE_NAME\s+:\s+${DEVICE_NAME}$$
-  ^\s+DEVICE_SERIAL_NUMBER\s+:\s+${DEVICE_SERIAL_NUMBER}$$
-  ^\s+MAC_ADDRESS\s+:\s+${MAC_ADDRESS}$$
-  ^\s+MANUFACTURING_DATE\s+:\s+${MANUFACTURING_DATE}$$
-  ^\s+VENDOR_NAME\s+:\s+${VENDOR_NAME}$$ -> Record
+  ^.*\wlot\s+${SLOT_ID}:$$ -> Condition_a
+  ^.*\wlot\s+${SLOT_ID}\s+CPU\s+${CPU_ID}:$$
+  ^.*DEVICE_NAME\s+:\s+${DEVICE_NAME}$$
+  ^.*DEVICE_SERIAL_NUMBER\s+:\s+${DEVICE_SERIAL_NUMBER}$$
+  ^.*MAC_ADDRESS\s+:\s+${MAC_ADDRESS}$$
+  ^.*MANUFACTURING_DATE\s+:\s+${MANUFACTURING_DATE}$$
+  ^.*VENDOR_NAME\s+:\s+${VENDOR_NAME}$$ -> Record
+  ^.*Power\s+${POWER_ID}:$$
+  ^.*DEVICE_NAME\s+:\s+${DEVICE_NAME}$$
+  ^.*DEVICE_SERIAL_NUMBER\s+:\s+${DEVICE_SERIAL_NUMBER}$$
+  ^.*MAC_ADDRESS\s+:\s+${MAC_ADDRESS}$$
+  ^.*MANUFACTURING_DATE\s+:\s+${MANUFACTURING_DATE}$$
+  ^.*VENDOR_NAME\s+:\s+${VENDOR_NAME}$$ -> Record
+
+Condition_a
+  ^.*DEVICE_NAME\s+:\s+${DEVICE_NAME}$$
+  ^.*DEVICE_SERIAL_NUMBER\s+:\s+${DEVICE_SERIAL_NUMBER}$$
+  ^.*MAC_ADDRESS\s+:\s+${MAC_ADDRESS}$$
+  ^.*MANUFACTURING_DATE\s+:\s+${MANUFACTURING_DATE}$$
+  ^.*VENDOR_NAME\s+:\s+${VENDOR_NAME}$$ -> Record
 
 EOF

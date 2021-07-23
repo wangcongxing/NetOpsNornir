@@ -8,6 +8,7 @@ Value Description (\S+)
 
 Start
   ^<${Name}>display\s+ip\s+interface\s+brief$$
+  ^${Interface}\s+${Physical}\s+${Protocol}\s+${IP_address}\s+${Description}$$ -> Record
   ^${Interface}\s+${Physical}\s+${Protocol}\s+${IP_address}\s+${VPN_instance}\s+${Description}$$ -> Record
 
 EOF

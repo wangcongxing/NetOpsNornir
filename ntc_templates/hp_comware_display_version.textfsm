@@ -8,8 +8,10 @@ Value System_image (\S+)
 Value System_image_version (\S+)
 Value Feature_image (\S+)
 Value Feature_image_version (\S+)
+Value CPU_ID (\w+)
 Value Chassis_ID (\d)
 Value Slot_ID (\d)
+Value Interface (\S+)
 Value BOARD_TYPE (\w+)
 Value DRAM ([\S+\s+]+)
 Value FLASH ([\S+\s+]+)
@@ -21,6 +23,10 @@ Value CPLD_2_Version ([\S+\s+]+)
 Value PowChip_Version ([\S+\s+]+)
 Value Release_Version ([\S+\s+]+)
 Value Patch_Version ([\S+\s+]+)
+Value Basic_Bootware_Version ([\S+\s+]+)
+Value Extended_Bootware_Version ([\S+\s+]+)
+Value Hardware_Version (\S+)
+Value Driver_Version (\S+)
 Value Reboot_Cause (\w+)
 
 Start
@@ -61,5 +67,15 @@ Start
   ^Release\s+Version:\s+${Release_Version}$$
   ^Patch\s+Version\s+:\s+${Patch_Version}$$
   ^Reboot\s+Cause\s+:\s+${Reboot_Cause}$$ -> Record
+  ^CPU\s+ID:\s+${CPU_ID}$$ -> Condition_a
+
+Condition_a
+  ^${DRAM}\s+DDR3\s+SDRAM\s+Memory$$
+  ^${FLASH}\s+Flash\s+Memory$$
+  ^PCB\s+Version:\s+${PCB_1_Version}$$
+  ^CPLD\s+Version:\s+${CPLD_1_Version}$$
+  ^Basic\s+BootWare\s+Version:\s+${Basic_Bootware_Version}$$
+  ^Extended\s+BootWare\s+Version:\s+${Extended_Bootware_Version}$$
+  ^\[SLOT\s+${Slot_ID}\]${Interface}\s+\(Hardware\)${Hardware_Version},\s+\(Driver\)${Driver_Version},\s+\(CPLD\)\S+$$ -> Record
 
 EOF

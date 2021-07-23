@@ -4,7 +4,7 @@ Value Summary_count (\d+)
 
 Start
   ^<${Name}>display\s+ip\s+routing-table\s+protocol\s+bgp$$
-  ^BGP\s+Routing\s+table\s+status\s+:\s+<${Status}>$$
-  ^Summary\s+count\s+:\s+${Summary_count}$$ -> Record
+  ^BGP\s+Routing\s+table\s+\w+\s+:\s+<${Status}>$$
+  ^Summary\s+\w+\s+:\s+${Summary_count}$$ -> Record
 
 EOF

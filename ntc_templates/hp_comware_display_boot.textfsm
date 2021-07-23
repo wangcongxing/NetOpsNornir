@@ -9,11 +9,18 @@ Value Backup_startup_software_images (\S+)
 Start
   ^<${Name}>display\s+boot$$
   ^Software\s+images\s+on\s+chassis\s+${Chassis_ID}\s+slot\s+${Slot_ID}:$$
-  ^Current\s+software\s+images:$$
+  ^Current\s+software\s+images:$$ -> CURRENT
+
+CURRENT
   ^\s+${Current_software_images}$$ -> Record
-  ^Main\s+startup\s+software\s+images:$$
+  ^Main\s+startup\s+software\s+images:$$ -> MAIN
+
+MAIN
   ^\s+${Main_startup_software_images}$$ -> Record
-  ^Backup\s+startup\s+software\s+images:$$
+  ^Backup\s+startup\s+software\s+images:$$ -> BACKUP
+
+BACKUP
   ^\s+${Backup_startup_software_images}$$ -> Record
+  ^Software\s+images\s+on\s+chassis\s+${Chassis_ID}\s+slot\s+${Slot_ID}:$$ -> Start
 
 EOF

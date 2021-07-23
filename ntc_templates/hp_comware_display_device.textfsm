@@ -2,12 +2,14 @@ Value Filldown Name (\S+)
 Value SLOT_ID (\S+)
 Value TYPE_NAME (\w+)
 Value STATE ([a-zA-Z]+)
-Value SUB_SLOT (\d)
+Value SUB_SLOT (\d+)
+Value MAX_PORTS (\d+)
 Value SOFT_VER (\S+)
 Value PATCH_VER (\S+)
 
 Start
   ^<${Name}>display\s+device$$
+  ^.*${SLOT_ID}\s+${TYPE_NAME}\s+${STATE}\s+${MAX_PORTS}\s+$$ -> Record
   ^${SLOT_ID}\s+${TYPE_NAME}\s+${STATE}\s+${SUB_SLOT}\s+${SOFT_VER}\s+${PATCH_VER}\s+$$ -> Record
 
 EOF
