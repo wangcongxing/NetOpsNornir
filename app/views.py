@@ -381,12 +381,12 @@ def get_lldp_sub(childs):
     return children
 
 
-class taskListViewSet(CustomViewBase):
+class readTaskListViewSet(CustomViewBase):
     queryset = models.readTaskList.objects.all().order_by('-id')
-    serializer_class = modelSerializers.taskListSerializer
-    filter_class = modelFilters.taskListFilter
+    serializer_class = modelSerializers.readTaskListSerializer
+    filter_class = modelFilters.readTaskListFilter
     ordering_fields = ('id',)  # 排序
-    permission_classes = [modelPermission.taskListPermission]
+    permission_classes = [modelPermission.readTaskListPermission]
 
     @action(methods=['get'], detail=False, url_path='run')
     def run(self, request, *args, **kwargs):
@@ -618,7 +618,7 @@ class taskListViewSet(CustomViewBase):
 
 class taskListDetailsViewSet(CustomViewBase):
     queryset = models.readTaskListDetails.objects.all().order_by('-id')
-    serializer_class = modelSerializers.taskListDetailsSerializer
+    serializer_class = modelSerializers.readTaskListDetailsSerializer
 
 
 class deviceTypesViewSet(CustomViewBase):

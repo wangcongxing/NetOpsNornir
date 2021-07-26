@@ -2,7 +2,7 @@ from app import models
 from rest_framework.permissions import BasePermission
 
 
-class taskListPermission(BasePermission):
+class readTaskListPermission(BasePermission):
     def has_permission(self, request, view):
         """让所有用户都有权限"""
         print("has_permission=", request.user)

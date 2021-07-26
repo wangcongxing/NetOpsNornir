@@ -16,10 +16,8 @@ elif ENV_PROFILE == "test":
 else:
     from NetOpsNornir import settings as config
 
-NetOpsAssetsUrl = config.initConfig["NetOpsAssetsUrl"]
 
-
-class taskListSerializer(serializers.ModelSerializer):
+class readTaskListSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
 
@@ -27,7 +25,7 @@ class taskListSerializer(serializers.ModelSerializer):
         print("validated_data=", validated_data)
         validated_data.update({"taskStatus": "待处理"})
 
-        assetsInfo = json.loads(self.initial_data.get("devInfo", "[]"))
+        dataTableKwargsData = json.loads(self.initial_data.get("dataTableKwargsData", "[]"))
         cmdids = list(filter(None, str(self.initial_data["cmdids"]).split(",")))
         if cmdids is []:
             # 如何返回错误信息
@@ -41,19 +39,20 @@ class taskListSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             taskList = super().create(validated_data)
             textfsmtemplates = models.cmdConfig.objects.filter(id__in=cmdids)
-            for item in assetsInfo:
+            for item in dataTableKwargsData:
                 print("item", item)
                 for tft in textfsmtemplates:
-                    if tft.deviceType.id == int(item["deviceType"]):
+                    deviceTypeId = int(item["deviceType"]["name"])
+                    if tft.deviceType.id == deviceTypeId:
                         tasklistdetails.append(
                             models.readTaskListDetails(taskList=taskList,
                                                        ip=item["ip"],
-                                                       deviceType_id=int(item["deviceType"]),
+                                                       deviceType_id=deviceTypeId,
                                                        taskStatus="待处理",
                                                        cmdConfig=tft,
                                                        username=username,
                                                        password=password, port=item["port"], ))
-            if tasklistdetails:
+            if len(tasklistdetails) > 0:
                 models.readTaskListDetails.objects.bulk_create(tasklistdetails)
         return taskList
 
@@ -67,7 +66,7 @@ class taskListSerializer(serializers.ModelSerializer):
         # depth = 1
 
 
-class taskListDetailsSerializer(serializers.ModelSerializer):
+class readTaskListDetailsSerializer(serializers.ModelSerializer):
     createTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
     lastTime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
 
@@ -291,7 +290,6 @@ class lldpInfoSerializer(serializers.ModelSerializer):
     firewallcount = serializers.SerializerMethodField()
     linecount = serializers.SerializerMethodField()
     monitorcount = serializers.SerializerMethodField()
-
 
     # 交换机-
     def get_switchcount(self, obj):

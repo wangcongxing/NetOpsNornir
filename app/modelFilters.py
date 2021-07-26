@@ -3,7 +3,7 @@ import django_filters
 from app import models
 
 
-class taskListFilter(filters.FilterSet):
+class readTaskListFilter(filters.FilterSet):
     # 模糊过滤
     eoaNumber = django_filters.CharFilter(field_name="eoaNumber", lookup_expr='icontains')
     taskName = django_filters.CharFilter(field_name="taskName", lookup_expr='icontains')

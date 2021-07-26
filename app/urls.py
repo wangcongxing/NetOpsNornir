@@ -6,7 +6,7 @@ router.register(r'deviceTypes', views.deviceTypesViewSet)  # 任务详情
 router.register(r'deviceTypesExport', modeExport.deviceTypesExport)  # 设备类型导出
 router.register(r'textFsmTemplates', views.cmdConfigViewSet)  # 指令配置
 router.register(r'textFsmTemplatesExport', modeExport.cmdConfigExport)  # 指令配置
-router.register(r'taskList', views.taskListViewSet)  # 任务管理
+router.register(r'readTaskList', views.readTaskListViewSet)  # 任务管理
 router.register(r'taskListDetails', views.taskListDetailsViewSet)  # 任务详情
 router.register(r'netmaintain', views.netmaintainViewSet)  # 日常维护
 router.register(r'netmaintainIpList', views.netmaintainIpListViewSet)  # 日常维护
